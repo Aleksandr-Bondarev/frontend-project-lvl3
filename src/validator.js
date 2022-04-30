@@ -1,14 +1,24 @@
 import * as yup from 'yup';
+import { setLocale } from 'yup';
+
+setLocale({
+  mixed: {
+    default: 'validationError',
+    notOneOf: 'duplicatedURL',
+  },
+  string: {
+    url: 'invalidURL',
+  },
+});
 
 const validator = (urlToValidate, alreadyExisting) => {
-  const schema = yup
-    .string()
-    .matches(
-      /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
-      'Enter correct url!',
-    )
-    .notOneOf(alreadyExisting, 'Already exists!');
-  return schema.validate(urlToValidate);
+  const schema = yup.string().url().notOneOf(alreadyExisting);
+
+  try {
+    return schema.validate(urlToValidate);
+  } catch (err) {
+    return err;
+  }
 };
 
 export default validator;
