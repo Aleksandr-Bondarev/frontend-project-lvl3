@@ -31,12 +31,9 @@ const renderList = (posts) => {
     button.setAttribute('data-bs-toggle', 'modal');
     button.setAttribute('data-bs-target', '#modal');
     button.textContent = 'Просмотр';
-    button.addEventListener('click', () => {
-      document.location = link;
-    });
+    button.addEventListener('click', () => document.location = link);
 
-    li.append(a);
-    li.append(button);
+    li.append(a, button);
     ul.append(li);
   });
   return ul;
