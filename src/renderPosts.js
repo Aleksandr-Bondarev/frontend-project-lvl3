@@ -4,20 +4,22 @@
 const renderPosts = (parsedRSS) => {
   const postsContainer = document.querySelector('.posts');
 
-  const mainContainer = document.createElement('div');
-  mainContainer.classList.add('card', 'border-0');
+  if (postsContainer.childNodes.length === 0) {
+    const createdMainContainer = document.createElement('div');
+    createdMainContainer.classList.add('card', 'border-0');
 
-  const mainTitleContainer = document.createElement('div');
-  mainTitleContainer.classList.add('card-body');
+    const mainTitleContainer = document.createElement('div');
+    mainTitleContainer.classList.add('card-body');
 
-  const mainTitle = document.createElement('h2');
-  mainTitle.classList.add('card-title', 'h4');
-  mainTitle.textContent = 'Посты';
+    const createdMainTitle = document.createElement('h2');
+    createdMainTitle.classList.add('card-title', 'h4');
+    createdMainTitle.textContent = 'Посты';
 
-  mainTitleContainer.append(mainTitle);
-  mainContainer.append(mainTitleContainer);
-  postsContainer.append(mainContainer);
-
+    mainTitleContainer.append(createdMainTitle);
+    createdMainContainer.append(mainTitleContainer);
+    postsContainer.append(createdMainContainer);
+  }
+  const existingMainContainer = document.querySelector('.card.border-0');
   const ul = document.createElement('ul');
 
   const { posts } = parsedRSS;
@@ -50,13 +52,16 @@ const renderPosts = (parsedRSS) => {
     button.setAttribute('data-bs-toggle', 'modal');
     button.setAttribute('data-bs-target', '#modal');
     button.textContent = 'Просмотр';
+    button.addEventListener('click', () => {
+      document.location = link;
+    });
 
     li.append(a);
     li.append(button);
     ul.append(li);
   });
 
-  mainContainer.append(ul);
+  existingMainContainer.append(ul);
 };
 
 export default renderPosts;
