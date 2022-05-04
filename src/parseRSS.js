@@ -1,9 +1,25 @@
 /* global DOMParser */
 /* eslint no-undef: "error" */
+const postsParser = (posts) => {
+  const result = posts.map((item) => {
+    const itemTitle = item.querySelector('title').textContent;
+    const itemLink = item.querySelector('link').textContent;
+    const itemDescription = item.querySelector('description').textContent;
+    return {
+      title: itemTitle,
+      link: itemLink,
+      description: itemDescription,
+    };
+  });
+  return result;
+};
 
 const parseRSS = (xml) => {
   const parser = new DOMParser();
   const parsedResponse = parser.parseFromString(xml, 'text/xml');
+  if (parsedResponse.querySelector('rss') === null) {
+    throw new Error('invalidRSS');
+  }
   const channel = parsedResponse.querySelector('channel');
 
   const mainTitle = channel.querySelector('title');
@@ -14,16 +30,7 @@ const parseRSS = (xml) => {
 
   const items = channel.querySelectorAll('item');
   const itemsArr = Array.from(items);
-  const posts = itemsArr.map((item) => {
-    const itemTitle = item.querySelector('title').textContent;
-    const itemLink = item.querySelector('link').textContent;
-    const itemDescription = item.querySelector('description').textContent;
-    return {
-      title: itemTitle,
-      link: itemLink,
-      description: itemDescription,
-    };
-  });
+  const posts = postsParser(itemsArr);
 
   return {
     title: titleText,

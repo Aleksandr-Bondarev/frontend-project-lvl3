@@ -11,6 +11,13 @@ import parseRSS from './parseRSS.js';
 import renderFeeds from './renderFeeds.js';
 import renderPosts from './renderPosts.js';
 
+const handleError = (inputNode, feedbackNode) => {
+  inputNode.classList.add('is-invalid');
+  inputNode.classList.add('is-invalid');
+  feedbackNode.classList.remove('text-success');
+  feedbackNode.classList.add('text-danger');
+};
+
 const newInstance = i18next.createInstance();
 newInstance.init({
   lng: 'ru',
@@ -39,25 +46,25 @@ form.addEventListener('submit', (event) => {
   event.preventDefault();
   validator(watchedState.inputValue, watchedState.feeds)
     .then((link) => {
-      watchedState.feeds.push(link);
-      input.classList.remove('is-invalid');
-      form.reset();
-      input.focus();
-      feedback.classList.remove('text-danger');
-      feedback.classList.add('text-success');
-      feedback.innerText = newInstance.t('success');
       getData(link).then((response) => {
         const { data } = response;
         const parsedData = parseRSS(data);
         renderFeeds(parsedData);
         renderPosts(parsedData);
+        watchedState.feeds.push(link);
+        input.classList.remove('is-invalid');
+        form.reset();
+        input.focus();
+        feedback.classList.remove('text-danger');
+        feedback.classList.add('text-success');
+        feedback.innerText = newInstance.t('success');
+      }).catch((err) => {
+        handleError(input, feedback);
+        feedback.innerText = newInstance.t(err.message);
       });
     })
     .catch((err) => {
-      input.classList.add('is-invalid');
-      input.classList.add('is-invalid');
-      feedback.classList.remove('text-success');
-      feedback.classList.add('text-danger');
+      handleError(input, feedback);
       feedback.innerText = newInstance.t(err.errors);
     });
 });
