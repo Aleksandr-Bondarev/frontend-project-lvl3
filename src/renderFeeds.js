@@ -4,20 +4,22 @@
 const renderFeeds = (parsedRSS) => {
   const feeds = document.querySelector('.feeds');
 
-  const mainContainer = document.createElement('div');
-  mainContainer.classList.add('card', 'border-0');
+  if (feeds.childNodes.length === 0) {
+    const createdMainContainer = document.createElement('div');
+    createdMainContainer.classList.add('card', 'border-0');
 
-  const titleContainer = document.createElement('div');
-  titleContainer.classList.add('card-body');
+    const titleContainer = document.createElement('div');
+    titleContainer.classList.add('card-body');
 
-  const mainHeader = document.createElement('h2');
-  mainHeader.textContent = 'Фиды';
-  mainHeader.classList.add('card-title', 'h4');
+    const mainHeader = document.createElement('h2');
+    mainHeader.textContent = 'Фиды';
+    mainHeader.classList.add('card-title', 'h4');
 
-  titleContainer.append(mainHeader);
-  mainContainer.append(titleContainer);
-  feeds.append(mainContainer);
-
+    titleContainer.append(mainHeader);
+    createdMainContainer.append(titleContainer);
+    feeds.append(createdMainContainer);
+  }
+  const existingMainContainer = feeds.childNodes[0];
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
@@ -35,7 +37,7 @@ const renderFeeds = (parsedRSS) => {
   li.append(listHeader);
   li.append(listParagraph);
   ul.append(li);
-  mainContainer.append(ul);
+  existingMainContainer.append(ul);
 };
 
 export default renderFeeds;
