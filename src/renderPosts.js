@@ -1,29 +1,8 @@
 /* global document */
 /* eslint no-undef: "error" */
 
-const renderPosts = (parsedRSS) => {
-  const postsContainer = document.querySelector('.posts');
-
-  if (postsContainer.childNodes.length === 0) {
-    const createdMainContainer = document.createElement('div');
-    createdMainContainer.classList.add('card', 'border-0');
-
-    const mainTitleContainer = document.createElement('div');
-    mainTitleContainer.classList.add('card-body');
-
-    const createdMainTitle = document.createElement('h2');
-    createdMainTitle.classList.add('card-title', 'h4');
-    createdMainTitle.textContent = 'Посты';
-
-    mainTitleContainer.append(createdMainTitle);
-    createdMainContainer.append(mainTitleContainer);
-    postsContainer.append(createdMainContainer);
-  }
-  const existingMainContainer = postsContainer.childNodes[0];
+const renderList = (posts) => {
   const ul = document.createElement('ul');
-
-  const { posts } = parsedRSS;
-
   posts.forEach((post, index) => {
     const { title, link } = post;
 
@@ -60,8 +39,34 @@ const renderPosts = (parsedRSS) => {
     li.append(button);
     ul.append(li);
   });
+  return ul;
+};
 
-  existingMainContainer.append(ul);
+const renderPosts = (parsedRSS) => {
+  const postsContainer = document.querySelector('.posts');
+
+  if (postsContainer.childNodes.length === 0) {
+    const createdMainContainer = document.createElement('div');
+    createdMainContainer.classList.add('card', 'border-0');
+
+    const mainTitleContainer = document.createElement('div');
+    mainTitleContainer.classList.add('card-body');
+
+    const createdMainTitle = document.createElement('h2');
+    createdMainTitle.classList.add('card-title', 'h4');
+    createdMainTitle.textContent = 'Посты';
+
+    mainTitleContainer.append(createdMainTitle);
+    createdMainContainer.append(mainTitleContainer);
+    postsContainer.append(createdMainContainer);
+  }
+  const existingMainContainer = postsContainer.childNodes[0];
+
+  const { posts } = parsedRSS;
+
+  const renderedList = renderList(posts);
+
+  existingMainContainer.append(renderedList);
 };
 
 export default renderPosts;

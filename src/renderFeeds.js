@@ -1,25 +1,29 @@
 /* global document */
 /* eslint no-undef: "error" */
 
+const containerCreator = (feeds) => {
+  const createdMainContainer = document.createElement('div');
+  createdMainContainer.classList.add('card', 'border-0');
+
+  const titleContainer = document.createElement('div');
+  titleContainer.classList.add('card-body');
+
+  const mainHeader = document.createElement('h2');
+  mainHeader.textContent = 'Фиды';
+  mainHeader.classList.add('card-title', 'h4');
+
+  titleContainer.append(mainHeader);
+  createdMainContainer.append(titleContainer);
+  feeds.append(createdMainContainer);
+};
+
 const renderFeeds = (parsedRSS) => {
-  const feeds = document.querySelector('.feeds');
+  const feedsContainer = document.querySelector('.feeds');
 
-  if (feeds.childNodes.length === 0) {
-    const createdMainContainer = document.createElement('div');
-    createdMainContainer.classList.add('card', 'border-0');
-
-    const titleContainer = document.createElement('div');
-    titleContainer.classList.add('card-body');
-
-    const mainHeader = document.createElement('h2');
-    mainHeader.textContent = 'Фиды';
-    mainHeader.classList.add('card-title', 'h4');
-
-    titleContainer.append(mainHeader);
-    createdMainContainer.append(titleContainer);
-    feeds.append(createdMainContainer);
+  if (feedsContainer.childNodes.length === 0) {
+    containerCreator(feedsContainer);
   }
-  const existingMainContainer = feeds.childNodes[0];
+  const existingMainContainer = feedsContainer.childNodes[0];
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
