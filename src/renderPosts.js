@@ -19,7 +19,7 @@ const renderPosts = (parsedRSS) => {
     createdMainContainer.append(mainTitleContainer);
     postsContainer.append(createdMainContainer);
   }
-  const existingMainContainer = document.querySelector('.card.border-0');
+  const existingMainContainer = postsContainer.childNodes[0];
   const ul = document.createElement('ul');
 
   const { posts } = parsedRSS;
