@@ -41,7 +41,10 @@ const renderList = (posts) => {
   return ul;
 };
 
-const renderPosts = (parsedRSS) => {
+const renderPosts = (parsedRSS, postsToRender = '') => {
+  if (typeof postsToRender === 'object' && postsToRender.length === 0) {
+    return;
+  }
   const postsContainer = document.querySelector('.posts');
 
   if (postsContainer.childNodes.length === 0) {
@@ -59,11 +62,12 @@ const renderPosts = (parsedRSS) => {
     createdMainContainer.append(mainTitleContainer);
     postsContainer.append(createdMainContainer);
   }
+
   const existingMainContainer = postsContainer.childNodes[0];
 
   const { posts } = parsedRSS;
 
-  const renderedList = renderList(posts);
+  const renderedList = postsToRender.length > 0 ? renderList(postsToRender) : renderList(posts);
 
   existingMainContainer.append(renderedList);
 };
