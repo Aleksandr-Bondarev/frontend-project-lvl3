@@ -87,6 +87,9 @@ const update = (watchedState) => {
 const initWatchedObject = (i18nextInstance, state) => onChange(state, function (path, value) {
   switch (path) {
     case 'temporaryValue': {
+      if (value === '') {
+        break;
+      }
       const resources = Array.from(this.resources);
       handleNewUrl(i18nextInstance, value, resources, this);
       break;
