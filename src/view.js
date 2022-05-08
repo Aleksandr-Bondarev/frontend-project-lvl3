@@ -94,9 +94,9 @@ const initWatchedObject = (i18nextInstance, state) => onChange(state, function (
       handleNewUrl(i18nextInstance, value, resources, this);
       break;
     }
-    // case 'resources':
-    //   update(this);
-    //   break;
+    case 'resources':
+      update(this);
+      break;
     default:
       console.log('Hello, World!');
   }
