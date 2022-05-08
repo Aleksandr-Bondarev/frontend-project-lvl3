@@ -1,3 +1,4 @@
+/* eslint no-param-reassign: ["error", { "props": false }] */
 /* eslint no-restricted-syntax: [0] */
 /* eslint prefer-arrow-callback: [0] */
 /* eslint func-names: [0] */
