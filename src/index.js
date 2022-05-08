@@ -33,5 +33,5 @@ input.addEventListener('input', (e) => {
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();
-  watchedState.resources.push(watchedState.inputValue);
+  watchedState.temporaryValue = watchedState.inputValue;
 });

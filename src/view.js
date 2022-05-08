@@ -10,12 +10,6 @@ import renderFeeds from './renderFeeds.js';
 import renderPosts from './renderPosts.js';
 import validator from './validator.js';
 
-const form = document.querySelector('.rss-form.text-body');
-const input = document.getElementById('url-input');
-const feedback = document.querySelector(
-  '.feedback.m-0.position-absolute.small',
-);
-
 const handleSuccessAdding = (inputNode, formNode, feedbackNode) => {
   inputNode.classList.remove('is-invalid');
   formNode.reset();
@@ -42,6 +36,9 @@ const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
         renderPosts(parsedData);
         watchedState.posts.push(parsedData.posts);
         watchedState.resources.push(url);
+        const form = document.querySelector('.rss-form.text-body');
+        const input = document.getElementById('url-input');
+        const feedback = document.querySelector('.feedback.m-0.position-absolute.small');
         handleSuccessAdding(input, form, feedback);
         feedback.innerText = i18nextInstance.t('success');
       } catch (err) {
@@ -92,9 +89,9 @@ const initWatchedObject = (i18nextInstance, state) => onChange(state, function (
       handleNewUrl(i18nextInstance, value, resources, this);
       break;
     }
-    case 'resources':
-      update(this);
-      break;
+    // case 'resources':
+    //   update(this);
+    //   break;
     default:
       console.log('Hello, World!');
   }
