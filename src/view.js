@@ -59,6 +59,7 @@ const update = (watchedState) => {
   const { posts } = watchedState;
   resources.forEach((url) => {
     getData(url).then((response) => {
+      console.log('updating');
       const { data } = response;
       const parsedData = parseRSS(data);
       const { posts: gettedPosts } = parsedData;
