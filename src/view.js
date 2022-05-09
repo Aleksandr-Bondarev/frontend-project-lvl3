@@ -100,7 +100,7 @@ const initWatchedObject = (i18nextInstance, state) => onChange(state, function (
       update(this);
       break;
     default:
-      return null;
+      break;
   }
 });
 
