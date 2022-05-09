@@ -1,6 +1,7 @@
 /* global document */
 /* global bootstrap */
 /* eslint no-undef: "error" */
+/* eslint no-unused-expressions: ["error", { "allowTernary": true }] */
 
 import 'bootstrap';
 
@@ -24,8 +25,18 @@ const addContentAndShowModal = (titleContent, descriptionContent, footerLink) =>
   modal.show();
 };
 
-const renderList = (posts) => {
+const createUl = () => {
   const ul = document.createElement('ul');
+  ul.classList.add(
+    'list-group',
+    'border-0',
+    'rounded-0',
+  );
+  return ul;
+};
+
+const renderList = (posts, isUlExisted) => {
+  const ul = isUlExisted ? document.querySelector('.rounded-0.list-group.border-0') : createUl();
   posts.forEach((post) => {
     const id = Math.floor(Math.random() * 100000);
     const { title, link, description } = post;
@@ -61,7 +72,7 @@ const renderList = (posts) => {
     });
 
     li.append(a, button);
-    ul.append(li);
+    isUlExisted ? ul.prepend(li) : ul.append(li);
   });
   return ul;
 };
@@ -90,9 +101,12 @@ const renderPosts = (parsedRSS, postsToRender = '') => {
 
   const existingMainContainer = postsContainer.childNodes[0];
 
+  const isUlExisted = existingMainContainer.childNodes[1] !== undefined;
+
   const { posts } = parsedRSS;
 
-  const renderedList = postsToRender.length > 0 ? renderList(postsToRender) : renderList(posts);
+  const renderedList = postsToRender.length > 0
+    ? renderList(postsToRender, isUlExisted) : renderList(posts, isUlExisted);
 
   existingMainContainer.append(renderedList);
 };

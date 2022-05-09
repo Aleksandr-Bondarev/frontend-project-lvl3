@@ -13,7 +13,9 @@ import validator from './validator.js';
 
 const form = document.querySelector('.rss-form.text-body');
 const input = document.getElementById('url-input');
-const feedback = document.querySelector('.feedback.m-0.position-absolute.small');
+const feedback = document.querySelector(
+  '.feedback.m-0.position-absolute.small',
+);
 
 const handleSuccessAdding = (inputNode, formNode, feedbackNode) => {
   inputNode.classList.remove('is-invalid');
@@ -56,28 +58,41 @@ const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
 
 const update = (watchedState) => {
   const { resources } = watchedState;
-  const { posts } = watchedState;
+  // console.log('resources!!!!!!!!1', resources);
+  const posts = JSON.parse(JSON.stringify(watchedState.posts));
+  // console.log('POOOOOOOOSTS', posts);
   resources.forEach((url) => {
     getData(url).then((data) => {
-      console.log('updating');
+      const postsIndex = resources.indexOf(url);
+      const currentUrlPreviouslyRecievedPosts = posts[postsIndex];
+      // console.log('IMPORTANT!', resources.indexOf(url))
+      // console.log(currentUrlPreviouslyRecievedPosts);
+      // console.log(url);
       const parsedData = parseRSS(data);
       const { posts: gettedPosts } = parsedData;
-      const newPosts = gettedPosts.map((post1) => {
-        const intersection = posts.map((post2) => {
-          if (post1.link === post2.link) {
-            return post2;
+      // console.log(gettedPosts);
+      const newPosts = gettedPosts.map((newPost) => {
+        const intersection = currentUrlPreviouslyRecievedPosts.map((oldPost) => {
+          // console.log('newPost', newPost);
+          // console.log('oldPost', oldPost);
+          if (
+            oldPost.link === newPost.link
+            && oldPost.title === newPost.title
+            && oldPost.description === newPost.description
+          ) {
+            return oldPost;
           }
           return null;
-        });
-        intersection.filter((el) => el !== null);
+        }).filter((el) => el !== null);
         if (intersection.length === 0) {
-          return post1;
+          return newPost;
         }
         return null;
       });
+      console.log(newPosts);
       const postsToRender = newPosts.filter((el) => el !== null);
-      const urlIndex = resources.indexOf(url);
-      postsToRender.forEach((post) => posts[urlIndex].push(post));
+      // console.log('posts to render', postsToRender);
+      postsToRender.forEach((post) => posts[postsIndex].push(post));
       renderPosts(parsedData, postsToRender);
       setTimeout(() => update(watchedState), 5000);
     });
