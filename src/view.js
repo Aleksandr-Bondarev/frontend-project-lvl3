@@ -43,7 +43,7 @@ const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
         watchedState.resources.push(url);
         handleSuccessAdding(input, form, feedback);
         feedback.innerText = i18nextInstance.t('success');
-        watchedState.temporaryValue = '';
+        watchedState.temporaryValue = null;
       } catch (err) {
         handleError(input, feedback);
         feedback.innerText = i18nextInstance.t(err.message);
@@ -89,7 +89,7 @@ const update = (watchedState) => {
 const initWatchedObject = (i18nextInstance, state) => onChange(state, function (path, value) {
   switch (path) {
     case 'temporaryValue': {
-      if (value === '') {
+      if (value === null) {
         break;
       }
       const resources = Array.from(this.resources);
@@ -100,7 +100,7 @@ const initWatchedObject = (i18nextInstance, state) => onChange(state, function (
       update(this);
       break;
     default:
-      console.log('Hello, World!');
+      return null;
   }
 });
 
