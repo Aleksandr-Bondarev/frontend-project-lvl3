@@ -33,8 +33,7 @@ const handleError = (inputNode, feedbackNode) => {
 const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
   validator(url, addedUrls)
     .then((validUrl) => getData(validUrl))
-    .then((response) => {
-      const { data } = response;
+    .then((data) => {
       try {
         const parsedData = parseRSS(data);
         renderFeeds(parsedData);
@@ -59,9 +58,8 @@ const update = (watchedState) => {
   const { resources } = watchedState;
   const { posts } = watchedState;
   resources.forEach((url) => {
-    getData(url).then((response) => {
+    getData(url).then((data) => {
       console.log('updating');
-      const { data } = response;
       const parsedData = parseRSS(data);
       const { posts: gettedPosts } = parsedData;
       const newPosts = gettedPosts.map((post1) => {
