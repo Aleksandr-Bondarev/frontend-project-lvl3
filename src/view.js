@@ -58,23 +58,15 @@ const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
 
 const update = (watchedState) => {
   const { resources } = watchedState;
-  // console.log('resources!!!!!!!!1', resources);
   const posts = JSON.parse(JSON.stringify(watchedState.posts));
-  // console.log('POOOOOOOOSTS', posts);
   resources.forEach((url) => {
     getData(url).then((data) => {
       const postsIndex = resources.indexOf(url);
       const currentUrlPreviouslyRecievedPosts = posts[postsIndex];
-      // console.log('IMPORTANT!', resources.indexOf(url))
-      // console.log(currentUrlPreviouslyRecievedPosts);
-      // console.log(url);
       const parsedData = parseRSS(data);
       const { posts: gettedPosts } = parsedData;
-      // console.log(gettedPosts);
       const newPosts = gettedPosts.map((newPost) => {
         const intersection = currentUrlPreviouslyRecievedPosts.map((oldPost) => {
-          // console.log('newPost', newPost);
-          // console.log('oldPost', oldPost);
           if (
             oldPost.link === newPost.link
             && oldPost.title === newPost.title
@@ -89,10 +81,9 @@ const update = (watchedState) => {
         }
         return null;
       });
-      console.log(newPosts);
       const postsToRender = newPosts.filter((el) => el !== null);
-      // console.log('posts to render', postsToRender);
       postsToRender.forEach((post) => posts[postsIndex].push(post));
+      watchedState.posts[postsIndex] = [...watchedState.posts[postsIndex], ...postsToRender];
       renderPosts(parsedData, postsToRender);
       setTimeout(() => update(watchedState), 5000);
     });
