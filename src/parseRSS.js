@@ -1,5 +1,3 @@
-/* global DOMParser */
-/* eslint no-undef: "error" */
 const postsParser = (posts) => {
   const result = posts.map((item) => {
     const itemTitle = item.querySelector('title').textContent;

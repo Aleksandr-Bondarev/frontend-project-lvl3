@@ -2,7 +2,6 @@
 /* eslint no-restricted-syntax: [0] */
 /* eslint prefer-arrow-callback: [0] */
 /* eslint func-names: [0] */
-/* global document */
 
 import onChange from 'on-change';
 import getData from './getData.js';

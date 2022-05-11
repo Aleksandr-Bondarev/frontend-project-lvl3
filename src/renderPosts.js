@@ -1,6 +1,4 @@
-/* global document */
 /* global bootstrap */
-/* eslint no-undef: "error" */
 /* eslint no-unused-expressions: ["error", { "allowTernary": true }] */
 
 import 'bootstrap';

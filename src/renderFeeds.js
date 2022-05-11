@@ -1,6 +1,3 @@
-/* global document */
-/* eslint no-undef: "error" */
-
 const containerCreator = (feeds) => {
   const createdMainContainer = document.createElement('div');
   createdMainContainer.classList.add('card', 'border-0');

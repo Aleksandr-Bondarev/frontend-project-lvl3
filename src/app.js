@@ -1,5 +1,3 @@
-/* global document */
-
 import i18next from 'i18next';
 import initWatchedObject from './view.js';
 import ru from './locales/ru-RU.js';
