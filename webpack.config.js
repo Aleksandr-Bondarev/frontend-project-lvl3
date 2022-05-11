@@ -1,6 +1,5 @@
 /* eslint no-underscore-dangle: ["error", { "allow": ["__dirname"] }] */
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import * as path from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -8,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default {
-  mode: 'production',
+  mode: 'development',
   entry: './src/index.js',
   output: {
     filename: 'main.js',
@@ -19,9 +18,7 @@ export default {
       {
         test: /\.css$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
+          'style-loader',
           'css-loader',
         ],
       },
@@ -30,9 +27,6 @@ export default {
   plugins: [
     new HtmlWebpackPlugin({
       template: './index.html',
-    }),
-    new MiniCssExtractPlugin({
-      filename: 'styles.css',
     }),
   ],
 };
