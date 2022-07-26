@@ -18,19 +18,14 @@ const app = () => {
   const state = {
     posts: [],
     resources: [],
-    temporaryValue: '',
     inputValue: '',
   };
 
   const watchedState = initWatchedObject(i18nextInstance, state);
 
-  input.addEventListener('input', (e) => {
-    watchedState.inputValue = e.target.value;
-  });
-
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    watchedState.temporaryValue = watchedState.inputValue;
+    watchedState.inputValue = input.value;
   });
 };
 

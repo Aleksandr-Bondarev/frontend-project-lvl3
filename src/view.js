@@ -90,7 +90,7 @@ const update = (watchedState) => {
 
 const initWatchedObject = (i18nextInstance, state) => onChange(state, function (path, value) {
   switch (path) {
-    case 'temporaryValue': {
+    case 'inputValue': {
       if (value === null) {
         break;
       }
