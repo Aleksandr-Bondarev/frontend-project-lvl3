@@ -43,7 +43,6 @@ const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
         handleSuccessAdding(input, form, feedback);
         feedback.innerText = i18nextInstance.t('success');
         watchedState.inputValue = null;
-        // watchedState.temporaryValue = null;
       } catch (err) {
         handleError(input, feedback);
         feedback.innerText = i18nextInstance.t(err.message);
@@ -85,7 +84,8 @@ const update = (watchedState) => {
       watchedState.posts[postsIndex] = [...watchedState.posts[postsIndex], ...postsToRender];
       renderPosts(parsedData, postsToRender);
       setTimeout(() => update(watchedState), 5000);
-    });
+    })
+      .then(form.querySelector('button[type="submit"]').disabled = false);
   });
 };
 
@@ -95,6 +95,7 @@ const initWatchedObject = (i18nextInstance, state) => onChange(state, function (
       if (value === null) {
         break;
       }
+      form.querySelector('button[type="submit"]').disabled = true;
       const resources = Array.from(this.resources);
       handleNewUrl(i18nextInstance, value, resources, this);
       break;
