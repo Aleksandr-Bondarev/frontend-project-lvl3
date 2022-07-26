@@ -42,7 +42,8 @@ const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
         watchedState.resources.push(url);
         handleSuccessAdding(input, form, feedback);
         feedback.innerText = i18nextInstance.t('success');
-        watchedState.temporaryValue = null;
+        watchedState.inputValue = null;
+        // watchedState.temporaryValue = null;
       } catch (err) {
         handleError(input, feedback);
         feedback.innerText = i18nextInstance.t(err.message);
