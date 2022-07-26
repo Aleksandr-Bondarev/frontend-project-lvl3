@@ -6,8 +6,7 @@
 import onChange from 'on-change';
 import getData from './getData.js';
 import parseRSS from './parseRSS.js';
-import renderFeeds from './renderFeeds.js';
-import renderPosts from './renderPosts.js';
+import { renderFeeds, renderPosts } from './render.js';
 import validator from './validator.js';
 
 const form = document.querySelector('.rss-form.text-body');
