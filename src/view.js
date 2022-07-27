@@ -1,19 +1,5 @@
-/* eslint no-param-reassign: ["error", { "props": false }] */
-/* eslint no-restricted-syntax: [0] */
 /* eslint prefer-arrow-callback: [0] */
 /* eslint func-names: [0] */
-
-import onChange from 'on-change';
-import getData from './getData.js';
-import parseRSS from './parseRSS.js';
-import { renderFeeds, renderPosts } from './render.js';
-import validator from './validator.js';
-
-const form = document.querySelector('.rss-form.text-body');
-const input = document.getElementById('url-input');
-const feedback = document.querySelector(
-  '.feedback.m-0.position-absolute.small',
-);
 
 const handleSuccessAdding = (inputNode, formNode, feedbackNode) => {
   inputNode.classList.remove('is-invalid');
@@ -30,82 +16,167 @@ const handleError = (inputNode, feedbackNode) => {
   feedbackNode.classList.add('text-danger');
 };
 
-const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
-  validator(url, addedUrls)
-    .then((validUrl) => getData(validUrl))
-    .then((data) => {
-      try {
-        const parsedData = parseRSS(data);
-        renderFeeds(parsedData);
-        renderPosts(parsedData);
-        watchedState.posts.push(parsedData.posts);
-        watchedState.resources.push(url);
-        handleSuccessAdding(input, form, feedback);
-        feedback.innerText = i18nextInstance.t('success');
-        watchedState.inputValue = null;
-      } catch (err) {
-        handleError(input, feedback);
-        feedback.innerText = i18nextInstance.t(err.message);
-      }
-    })
-    .catch((err) => {
-      handleError(input, feedback);
-      feedback.innerText = i18nextInstance.t(err.message);
-    });
+const linkStatusChanger = (linkId) => {
+  const targetLink = document.querySelector(`a[data-id="${linkId}"]`);
+  targetLink.classList.remove('fw-bold');
+  targetLink.classList.add('fw-normal');
+  return targetLink;
 };
 
-const update = (watchedState) => {
-  const { resources } = watchedState;
-  const posts = JSON.parse(JSON.stringify(watchedState.posts));
-  resources.forEach((url) => {
-    getData(url).then((data) => {
-      const postsIndex = resources.indexOf(url);
-      const currentUrlPreviouslyRecievedPosts = posts[postsIndex];
-      const parsedData = parseRSS(data);
-      const { posts: gettedPosts } = parsedData;
-      const newPosts = gettedPosts.map((newPost) => {
-        const intersection = currentUrlPreviouslyRecievedPosts.map((oldPost) => {
-          if (
-            oldPost.link === newPost.link
-            && oldPost.title === newPost.title
-            && oldPost.description === newPost.description
-          ) {
-            return oldPost;
-          }
-          return null;
-        }).filter((el) => el !== null);
-        if (intersection.length === 0) {
-          return newPost;
-        }
-        return null;
-      });
-      const postsToRender = newPosts.filter((el) => el !== null);
-      postsToRender.forEach((post) => posts[postsIndex].push(post));
-      watchedState.posts[postsIndex] = [...watchedState.posts[postsIndex], ...postsToRender];
-      renderPosts(parsedData, postsToRender);
-      setTimeout(() => update(watchedState), 5000);
-    })
-      .then(form.querySelector('button[type="submit"]').disabled = false);
+const addContentAndShowModal = (
+  titleContent,
+  descriptionContent,
+  footerLink,
+) => {
+  const modalTitle = document.querySelector('.modal-title');
+  modalTitle.textContent = titleContent;
+
+  const modalBody = document.querySelector('.modal-body.text-break');
+  modalBody.textContent = descriptionContent;
+
+  const modalFooterLink = document.querySelector(
+    '.btn.btn-primary.full-article',
+  );
+  modalFooterLink.href = footerLink;
+
+  // eslint-disable-next-line
+  const modal = new bootstrap.Modal(document.querySelector('#modal'));
+  modal.show();
+};
+
+const createUl = () => {
+  const ul = document.createElement('ul');
+  ul.classList.add('list-group', 'border-0', 'rounded-0');
+  return ul;
+};
+
+const renderList = (posts, isUlExisted) => {
+  const ul = isUlExisted
+    ? document.querySelector('.rounded-0.list-group.border-0')
+    : createUl();
+  posts.forEach((post) => {
+    const id = Math.floor(Math.random() * 100000);
+    const { title, link, description } = post;
+
+    const li = document.createElement('li');
+    li.classList.add(
+      'list-group-item',
+      'd-flex',
+      'justify-content-between',
+      'align-items-start',
+      'border-0',
+      'border-end-0',
+    );
+
+    const a = document.createElement('a');
+    a.setAttribute('href', link);
+    a.classList.add('fw-bold');
+    a.setAttribute('data-id', id);
+    a.setAttribute('data-description', description);
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.textContent = title;
+
+    const button = document.createElement('button');
+    button.setAttribute('type', 'button');
+    button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    button.setAttribute('data-id', id);
+    button.setAttribute('data-bs-toggle', 'modal');
+    button.setAttribute('data-bs-target', '#modal');
+    button.textContent = 'Просмотр';
+
+    li.append(a, button);
+    if (isUlExisted) {
+      ul.prepend(li);
+    } else { ul.append(li); }
+    // isUlExisted ? ul.prepend(li) : ul.append(li);
   });
+  return ul;
 };
 
-const initWatchedObject = (i18nextInstance, state) => onChange(state, function (path, value) {
-  switch (path) {
-    case 'inputValue': {
-      if (value === null) {
-        break;
-      }
-      form.querySelector('button[type="submit"]').disabled = true;
-      const resources = Array.from(this.resources);
-      handleNewUrl(i18nextInstance, value, resources, this);
-      break;
-    }
-    case 'resources':
-      update(this);
-      break;
-    default:
-      break;
+const renderPosts = (parsedRSS, postsToRender = '') => {
+  if (typeof postsToRender === 'object' && postsToRender.length === 0) {
+    return;
   }
-});
+  const postsContainer = document.querySelector('.posts');
 
-export default initWatchedObject;
+  if (postsContainer.childNodes.length === 0) {
+    const createdMainContainer = document.createElement('div');
+    createdMainContainer.classList.add('card', 'border-0');
+
+    const mainTitleContainer = document.createElement('div');
+    mainTitleContainer.classList.add('card-body');
+
+    const createdMainTitle = document.createElement('h2');
+    createdMainTitle.classList.add('card-title', 'h4');
+    createdMainTitle.textContent = 'Посты';
+
+    mainTitleContainer.append(createdMainTitle);
+    createdMainContainer.append(mainTitleContainer);
+    postsContainer.append(createdMainContainer);
+  }
+
+  const existingMainContainer = postsContainer.childNodes[0];
+
+  const isUlExisted = existingMainContainer.childNodes[1] !== undefined;
+
+  const { posts } = parsedRSS;
+
+  const renderedList = postsToRender.length > 0
+    ? renderList(postsToRender, isUlExisted)
+    : renderList(posts, isUlExisted);
+
+  existingMainContainer.append(renderedList);
+};
+
+const containerCreator = (feeds) => {
+  const createdMainContainer = document.createElement('div');
+  createdMainContainer.classList.add('card', 'border-0');
+
+  const titleContainer = document.createElement('div');
+  titleContainer.classList.add('card-body');
+
+  const mainHeader = document.createElement('h2');
+  mainHeader.textContent = 'Фиды';
+  mainHeader.classList.add('card-title', 'h4');
+
+  titleContainer.append(mainHeader);
+  createdMainContainer.append(titleContainer);
+  feeds.append(createdMainContainer);
+};
+
+const renderFeeds = (parsedRSS) => {
+  const feedsContainer = document.querySelector('.feeds');
+
+  if (feedsContainer.childNodes.length === 0) {
+    containerCreator(feedsContainer);
+  }
+  const existingMainContainer = feedsContainer.childNodes[0];
+  const ul = document.createElement('ul');
+  ul.classList.add('list-group', 'border-0', 'rounded-0');
+
+  const li = document.createElement('li');
+  li.classList.add('list-group-item', 'border-0', 'border-end-0');
+
+  const listHeader = document.createElement('h3');
+  listHeader.classList.add('h6', 'm-0');
+  listHeader.textContent = parsedRSS.title;
+
+  const listParagraph = document.createElement('p');
+  listParagraph.classList.add('m-0', 'small', 'text-black-50');
+  listParagraph.textContent = parsedRSS.description;
+
+  li.append(listHeader);
+  li.append(listParagraph);
+  ul.append(li);
+  existingMainContainer.append(ul);
+};
+
+export {
+  handleError,
+  handleSuccessAdding,
+  renderPosts,
+  renderFeeds,
+  linkStatusChanger,
+  addContentAndShowModal,
+};
