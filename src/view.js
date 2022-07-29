@@ -1,19 +1,28 @@
 /* eslint prefer-arrow-callback: [0] */
+/* eslint no-param-reassign: ["error", { "props": false }] */
 /* eslint func-names: [0] */
 
-const handleSuccessAdding = (inputNode, formNode, feedbackNode) => {
+import 'bootstrap';
+
+const disableSubmit = (node, boolean) => {
+  node.disabled = boolean;
+};
+
+const handleSuccessAdding = (inputNode, formNode, feedbackNode, i18nextInstance) => {
   inputNode.classList.remove('is-invalid');
   formNode.reset();
   inputNode.focus();
   feedbackNode.classList.remove('text-danger');
   feedbackNode.classList.add('text-success');
+  feedbackNode.innerText = i18nextInstance.t('success');
 };
 
-const handleError = (inputNode, feedbackNode) => {
+const handleError = (inputNode, feedbackNode, error, i18nextInstance) => {
   inputNode.classList.add('is-invalid');
   inputNode.classList.add('is-invalid');
   feedbackNode.classList.remove('text-success');
   feedbackNode.classList.add('text-danger');
+  feedbackNode.innerText = i18nextInstance.t(error.message);
 };
 
 const linkStatusChanger = (linkId) => {
@@ -89,7 +98,6 @@ const renderList = (posts, isUlExisted) => {
     if (isUlExisted) {
       ul.prepend(li);
     } else { ul.append(li); }
-    // isUlExisted ? ul.prepend(li) : ul.append(li);
   });
   return ul;
 };
@@ -179,4 +187,5 @@ export {
   renderFeeds,
   linkStatusChanger,
   addContentAndShowModal,
+  disableSubmit,
 };

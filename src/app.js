@@ -4,10 +4,12 @@
 import i18next from 'i18next';
 import onChange from 'on-change';
 import ru from './locales/ru-RU.js';
-import getData from './getData.js';
-import parseRSS from './parseRSS.js';
-import validator from './validator.js';
+import proxifyUrl from './utils/proxifyUrl.js';
+import getData from './utils/getData.js';
+import parseRSS from './utils/parseRSS.js';
+import validator from './utils/validator.js';
 import {
+  disableSubmit,
   handleError,
   handleSuccessAdding,
   linkStatusChanger,
@@ -18,14 +20,23 @@ import {
 
 const form = document.querySelector('.rss-form.text-body');
 const input = document.getElementById('url-input');
-const feedback = document.querySelector(
-  '.feedback.m-0.position-absolute.small',
-);
+const feedback = document.querySelector('.feedback.m-0.position-absolute.small');
 const postsContainer = document.querySelector('.container-xxl');
+const submitButton = document.querySelector('button[type="submit"]');
 
-const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
+const i18nextInstance = i18next.createInstance();
+i18nextInstance.init({
+  lng: 'ru',
+  debug: true,
+  resources: {
+    ru,
+  },
+});
+
+const handleNewUrl = (url, addedUrls, watchedState) => {
   validator(url, addedUrls)
-    .then((validUrl) => getData(validUrl))
+    .then((validUrl) => proxifyUrl(validUrl))
+    .then((proxified) => getData(proxified))
     .then((data) => {
       try {
         const parsedData = parseRSS(data);
@@ -33,27 +44,27 @@ const handleNewUrl = (i18nextInstance, url, addedUrls, watchedState) => {
         renderPosts(parsedData);
         watchedState.posts.push(parsedData.posts);
         watchedState.resources.push(url);
-        handleSuccessAdding(input, form, feedback);
-        feedback.innerText = i18nextInstance.t('success');
+        handleSuccessAdding(input, form, feedback, i18nextInstance);
         watchedState.inputValue = null;
       } catch (err) {
-        handleError(input, feedback);
-        feedback.innerText = i18nextInstance.t(err.message);
-        form.querySelector('button[type="submit"]').disabled = false;
+        handleError(input, feedback, err, i18nextInstance);
+        disableSubmit(submitButton, false);
       }
     })
     .catch((err) => {
-      handleError(input, feedback);
-      feedback.innerText = i18nextInstance.t(err.message);
-      form.querySelector('button[type="submit"]').disabled = false;
+      handleError(input, feedback, err, i18nextInstance);
+      disableSubmit(submitButton, false);
     });
 };
 
 const update = (watchedState) => {
   const { resources } = watchedState;
   const posts = JSON.parse(JSON.stringify(watchedState.posts));
+
   resources.forEach((url) => {
-    getData(url)
+    const proxified = proxifyUrl(url);
+
+    getData(proxified)
       .then((data) => {
         const postsIndex = resources.indexOf(url);
         const currentUrlPreviouslyRecievedPosts = posts[postsIndex];
@@ -77,16 +88,18 @@ const update = (watchedState) => {
           }
           return null;
         });
+
         const postsToRender = newPosts.filter((el) => el !== null);
         postsToRender.forEach((post) => posts[postsIndex].push(post));
         watchedState.posts[postsIndex] = [
           ...watchedState.posts[postsIndex],
           ...postsToRender,
         ];
+
         renderPosts(parsedData, postsToRender);
         setTimeout(() => update(watchedState), 5000);
       })
-      .then((form.querySelector('button[type="submit"]').disabled = false));
+      .then(() => disableSubmit(submitButton, false));
   });
 };
 
@@ -97,9 +110,9 @@ const initWatchedObject = (i18nextInstance, state) => onChange(state, function (
       if (value === null) {
         break;
       }
-      form.querySelector('button[type="submit"]').disabled = true;
+      disableSubmit(submitButton, true);
       const resources = Array.from(this.resources);
-      handleNewUrl(i18nextInstance, value, resources, this);
+      handleNewUrl(value, resources, this);
       break;
     }
     case 'resources':
@@ -111,15 +124,6 @@ const initWatchedObject = (i18nextInstance, state) => onChange(state, function (
 });
 
 const app = () => {
-  const i18nextInstance = i18next.createInstance();
-  i18nextInstance.init({
-    lng: 'ru',
-    debug: true,
-    resources: {
-      ru,
-    },
-  });
-
   const state = {
     posts: [],
     resources: [],
