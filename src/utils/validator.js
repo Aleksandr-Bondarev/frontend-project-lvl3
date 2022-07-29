@@ -15,7 +15,7 @@ const validator = (urlToValidate, alreadyExisting) => {
   const schema = yup.string().url().notOneOf(alreadyExisting);
 
   try {
-    return schema.validate(urlToValidate);
+    return schema.validateSync(urlToValidate);
   } catch (err) {
     return err;
   }

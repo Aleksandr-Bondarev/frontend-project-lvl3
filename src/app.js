@@ -20,7 +20,9 @@ import {
 
 const form = document.querySelector('.rss-form.text-body');
 const input = document.getElementById('url-input');
-const feedback = document.querySelector('.feedback.m-0.position-absolute.small');
+const feedback = document.querySelector(
+  '.feedback.m-0.position-absolute.small',
+);
 const postsContainer = document.querySelector('.container-xxl');
 const submitButton = document.querySelector('button[type="submit"]');
 
@@ -36,26 +38,29 @@ i18nextInstance.init({
 const handleNewUrl = (url, addedUrls, watchedState) => {
   watchedState.disableSubmit = true;
 
-  validator(url, addedUrls)
-    .then((validUrl) => proxifyUrl(validUrl))
-    .then((proxified) => getData(proxified))
-    .then((data) => {
-      try {
-        const parsedData = parseRSS(data);
-        renderFeeds(parsedData);
-        renderPosts(parsedData);
-        watchedState.posts.push(parsedData.posts);
-        watchedState.resources.push(url);
-        handleSuccessAdding(input, form, feedback, i18nextInstance);
-        watchedState.inputValue = null;
-      } catch (err) {
-        handleError(input, feedback, err, i18nextInstance);
-      }
-    })
-    .catch((err) => {
-      handleError(input, feedback, err, i18nextInstance);
-    })
-    .then((watchedState.disableSubmit = false));
+  const validUrl = validator(url, addedUrls);
+
+  if (typeof validUrl === 'string') {
+    const proxified = proxifyUrl(validUrl);
+    getData(proxified)
+      .then((data) => {
+        try {
+          const parsedData = parseRSS(data);
+          renderFeeds(parsedData);
+          renderPosts(parsedData);
+          watchedState.posts.push(parsedData.posts);
+          watchedState.resources.push(url);
+          handleSuccessAdding(input, form, feedback, i18nextInstance);
+          watchedState.inputValue = null;
+        } catch (err) {
+          handleError(input, feedback, err, i18nextInstance);
+        }
+      })
+      .then((watchedState.disableSubmit = false));
+  } else {
+    handleError(input, feedback, validUrl, i18nextInstance);
+    watchedState.disableSubmit = false;
+  }
 };
 
 const update = (watchedState) => {
@@ -100,7 +105,7 @@ const update = (watchedState) => {
         renderPosts(parsedData, postsToRender);
         setTimeout(() => update(watchedState), 5000);
       })
-      .then(watchedState.disableSubmit = false);
+      .then((watchedState.disableSubmit = false));
   });
 };
 
