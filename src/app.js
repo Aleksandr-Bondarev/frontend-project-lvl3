@@ -44,6 +44,7 @@ const handleNewUrl = (url, addedUrls, watchedState) => {
     const proxified = proxifyUrl(validUrl);
     getData(proxified)
       .then((data) => {
+        console.log('data', data);
         try {
           const parsedData = parseRSS(data);
           renderFeeds(parsedData);
@@ -56,6 +57,7 @@ const handleNewUrl = (url, addedUrls, watchedState) => {
           handleError(input, feedback, err, i18nextInstance);
         }
       })
+      .catch((err) => { handleError(input, feedback, err, i18nextInstance); })
       .then((watchedState.disableSubmit = false));
   } else {
     handleError(input, feedback, validUrl, i18nextInstance);
