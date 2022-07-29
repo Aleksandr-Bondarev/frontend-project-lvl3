@@ -34,6 +34,8 @@ i18nextInstance.init({
 });
 
 const handleNewUrl = (url, addedUrls, watchedState) => {
+  watchedState.disableSubmit = true;
+
   validator(url, addedUrls)
     .then((validUrl) => proxifyUrl(validUrl))
     .then((proxified) => getData(proxified))
@@ -48,13 +50,12 @@ const handleNewUrl = (url, addedUrls, watchedState) => {
         watchedState.inputValue = null;
       } catch (err) {
         handleError(input, feedback, err, i18nextInstance);
-        disableSubmit(submitButton, false);
       }
     })
     .catch((err) => {
       handleError(input, feedback, err, i18nextInstance);
-      disableSubmit(submitButton, false);
-    });
+    })
+    .then((watchedState.disableSubmit = false));
 };
 
 const update = (watchedState) => {
@@ -99,7 +100,7 @@ const update = (watchedState) => {
         renderPosts(parsedData, postsToRender);
         setTimeout(() => update(watchedState), 5000);
       })
-      .then(() => disableSubmit(submitButton, false));
+      .then(watchedState.disableSubmit = false);
   });
 };
 
@@ -110,13 +111,16 @@ const initWatchedObject = (i18nextInstance, state) => onChange(state, function (
       if (value === null) {
         break;
       }
-      disableSubmit(submitButton, true);
       const resources = Array.from(this.resources);
       handleNewUrl(value, resources, this);
       break;
     }
     case 'resources':
       update(this);
+      break;
+    case 'disableSubmit':
+      console.log('i am here', value);
+      disableSubmit(submitButton, value);
       break;
     default:
       break;
@@ -128,6 +132,7 @@ const app = () => {
     posts: [],
     resources: [],
     inputValue: '',
+    disableSubmit: '',
   };
 
   const watchedState = initWatchedObject(i18nextInstance, state);
