@@ -45,18 +45,13 @@ const handleNewUrl = (url, addedUrls, watchedState) => {
     const proxified = proxifyUrl(validUrl);
     getData(proxified)
       .then((data) => {
-        console.log('data', data);
-        try {
-          const parsedData = parseRSS(data);
-          renderFeeds(parsedData);
-          renderPosts(parsedData);
-          watchedState.posts.push(parsedData.posts);
-          watchedState.resources.push(url);
-          handleSuccessAdding(input, form, feedback, i18nextInstance);
-          watchedState.inputValue = null;
-        } catch (err) {
-          handleError(input, feedback, err, i18nextInstance);
-        }
+        const parsedData = parseRSS(data);
+        renderFeeds(parsedData);
+        renderPosts(parsedData);
+        watchedState.posts.push(parsedData.posts);
+        watchedState.resources.push(url);
+        handleSuccessAdding(input, form, feedback, i18nextInstance);
+        watchedState.inputValue = null;
       })
       .catch((err) => { handleError(input, feedback, err, i18nextInstance); })
       .then((watchedState.disableSubmit = false));
