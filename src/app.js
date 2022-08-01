@@ -2,6 +2,7 @@
 /* eslint no-restricted-syntax: [0] */
 
 import i18next from 'i18next';
+import * as _ from 'lodash';
 import onChange from 'on-change';
 import ru from './locales/ru-RU.js';
 import proxifyUrl from './utils/proxifyUrl.js';
@@ -78,33 +79,20 @@ const update = (watchedState) => {
         const currentUrlPreviouslyRecievedPosts = posts[postsIndex];
         const parsedData = parseRSS(data);
         const { posts: gettedPosts } = parsedData;
-        const newPosts = gettedPosts.map((newPost) => {
-          const intersection = currentUrlPreviouslyRecievedPosts
-            .map((oldPost) => {
-              if (
-                oldPost.link === newPost.link
-                && oldPost.title === newPost.title
-                && oldPost.description === newPost.description
-              ) {
-                return oldPost;
-              }
-              return null;
-            })
-            .filter((el) => el !== null);
-          if (intersection.length === 0) {
-            return newPost;
-          }
-          return null;
-        });
 
-        const postsToRender = newPosts.filter((el) => el !== null);
-        postsToRender.forEach((post) => posts[postsIndex].push(post));
+        const newPosts = _.differenceWith(
+          gettedPosts,
+          currentUrlPreviouslyRecievedPosts,
+          _.isEqual,
+        );
+        newPosts.forEach((post) => posts[postsIndex].push(post));
+
         watchedState.posts[postsIndex] = [
           ...watchedState.posts[postsIndex],
-          ...postsToRender,
+          ...newPosts,
         ];
 
-        renderPosts(parsedData, postsToRender);
+        renderPosts(parsedData, newPosts);
         setTimeout(() => update(watchedState), 5000);
       })
       .then((watchedState.disableSubmit = false));
