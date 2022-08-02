@@ -3,6 +3,7 @@
 /* eslint func-names: [0] */
 
 import 'bootstrap';
+// import * as _ from 'lodash';
 
 const disableSubmit = (node, boolean) => {
   node.disabled = boolean;
@@ -102,7 +103,7 @@ const renderList = (posts, isUlExisted) => {
   return ul;
 };
 
-const renderPosts = (parsedRSS, postsToRender = '') => {
+const renderPosts = (posts, postsToRender = '') => {
   if (typeof postsToRender === 'object' && postsToRender.length === 0) {
     return;
   }
@@ -128,8 +129,6 @@ const renderPosts = (parsedRSS, postsToRender = '') => {
 
   const isUlExisted = existingMainContainer.childNodes[1] !== undefined;
 
-  const { posts } = parsedRSS;
-
   const renderedList = postsToRender.length > 0
     ? renderList(postsToRender, isUlExisted)
     : renderList(posts, isUlExisted);
@@ -153,7 +152,7 @@ const containerCreator = (feeds) => {
   feeds.append(createdMainContainer);
 };
 
-const renderFeeds = (parsedRSS) => {
+const renderFeeds = ({ title, description }) => {
   const feedsContainer = document.querySelector('.feeds');
 
   if (feedsContainer.childNodes.length === 0) {
@@ -168,11 +167,11 @@ const renderFeeds = (parsedRSS) => {
 
   const listHeader = document.createElement('h3');
   listHeader.classList.add('h6', 'm-0');
-  listHeader.textContent = parsedRSS.title;
+  listHeader.textContent = title;
 
   const listParagraph = document.createElement('p');
   listParagraph.classList.add('m-0', 'small', 'text-black-50');
-  listParagraph.textContent = parsedRSS.description;
+  listParagraph.textContent = description;
 
   li.append(listHeader);
   li.append(listParagraph);
