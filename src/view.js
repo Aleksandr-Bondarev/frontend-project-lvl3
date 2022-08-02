@@ -3,13 +3,26 @@
 /* eslint func-names: [0] */
 
 import 'bootstrap';
-// import * as _ from 'lodash';
+import * as _ from 'lodash';
+import onChange from 'on-change';
+
+const form = document.querySelector('.rss-form.text-body');
+const input = document.getElementById('url-input');
+const feedback = document.querySelector(
+  '.feedback.m-0.position-absolute.small',
+);
+const submitButton = document.querySelector('button[type="submit"]');
 
 const disableSubmit = (node, boolean) => {
   node.disabled = boolean;
 };
 
-const handleSuccessAdding = (inputNode, formNode, feedbackNode, i18nextInstance) => {
+const handleSuccessAdding = (
+  inputNode,
+  formNode,
+  feedbackNode,
+  i18nextInstance,
+) => {
   inputNode.classList.remove('is-invalid');
   formNode.reset();
   inputNode.focus();
@@ -30,24 +43,19 @@ const linkStatusChanger = (linkId) => {
   const targetLink = document.querySelector(`a[data-id="${linkId}"]`);
   targetLink.classList.remove('fw-bold');
   targetLink.classList.add('fw-normal');
-  return targetLink;
 };
 
-const addContentAndShowModal = (
-  titleContent,
-  descriptionContent,
-  footerLink,
-) => {
+const addContentAndShowModal = ({ url, description, title }) => {
   const modalTitle = document.querySelector('.modal-title');
-  modalTitle.textContent = titleContent;
+  modalTitle.textContent = title;
 
   const modalBody = document.querySelector('.modal-body.text-break');
-  modalBody.textContent = descriptionContent;
+  modalBody.textContent = description;
 
   const modalFooterLink = document.querySelector(
     '.btn.btn-primary.full-article',
   );
-  modalFooterLink.href = footerLink;
+  modalFooterLink.href = url;
 
   // eslint-disable-next-line
   const modal = new bootstrap.Modal(document.querySelector('#modal'));
@@ -98,7 +106,9 @@ const renderList = (posts, isUlExisted) => {
     li.append(a, button);
     if (isUlExisted) {
       ul.prepend(li);
-    } else { ul.append(li); }
+    } else {
+      ul.append(li);
+    }
   });
   return ul;
 };
@@ -152,7 +162,7 @@ const containerCreator = (feeds) => {
   feeds.append(createdMainContainer);
 };
 
-const renderFeeds = ({ title, description }) => {
+const renderFeeds = ([{ title, description }]) => {
   const feedsContainer = document.querySelector('.feeds');
 
   if (feedsContainer.childNodes.length === 0) {
@@ -179,12 +189,53 @@ const renderFeeds = ({ title, description }) => {
   existingMainContainer.append(ul);
 };
 
+// eslint-disable-next-line
+const initWatchedObject = (state, i18nextInstance) => onChange(state, function (path, value, previousValue) {
+  switch (path) {
+    case 'posts':
+      if (previousValue.length !== 0) {
+        const newPosts = _.differenceWith(value, previousValue, _.isEqual);
+        renderPosts(newPosts);
+        break;
+      }
+      renderPosts(value);
+      break;
+    case 'feeds':
+      if (previousValue.length !== 0) {
+        const newFeeds = _.differenceWith(value, previousValue, _.isEqual);
+        renderPosts(newFeeds);
+        break;
+      }
+      renderFeeds(value);
+      break;
+    case 'disableSubmit':
+      disableSubmit(submitButton, value);
+      break;
+    case 'statusSuccess':
+      if (value !== true) break;
+      handleSuccessAdding(input, form, feedback, i18nextInstance);
+      break;
+    case 'errorMessage':
+      if (value === '') break;
+      console.log('error', value);
+      handleError(input, feedback, value, i18nextInstance);
+      break;
+    case 'linkToChangeStatus':
+      linkStatusChanger(value);
+      break;
+    case 'modalContent':
+      console.log(value);
+      addContentAndShowModal(value);
+      break;
+    default:
+      break;
+  }
+});
+
 export {
+  initWatchedObject,
   handleError,
   handleSuccessAdding,
-  renderPosts,
-  renderFeeds,
   linkStatusChanger,
   addContentAndShowModal,
-  disableSubmit,
 };
