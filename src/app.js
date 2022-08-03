@@ -1,6 +1,7 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 /* eslint no-restricted-syntax: [0] */
 
+import 'bootstrap';
 import i18next from 'i18next';
 import * as _ from 'lodash';
 import ru from './locales/ru-RU.js';
@@ -8,9 +9,7 @@ import proxifyUrl from './utils/proxifyUrl.js';
 import getData from './utils/getData.js';
 import parseRSS from './utils/parseRSS.js';
 import validator from './utils/validator.js';
-import {
-  initWatchedObject,
-} from './view.js';
+import initWatchedObject from './view.js';
 
 const form = document.querySelector('.rss-form.text-body');
 const input = document.getElementById('url-input');
@@ -31,26 +30,24 @@ const update = (watchedState) => {
 
   resources.forEach((url) => {
     const proxified = proxifyUrl(url);
-
     getData(proxified)
       .then((data) => {
         const postsIndex = resources.indexOf(url);
         const currentUrlPreviouslyRecievedPosts = posts[postsIndex];
         const parsedData = parseRSS(data);
         const { posts: gettedPosts } = parsedData;
-
         const newPosts = _.differenceWith(
           gettedPosts,
           currentUrlPreviouslyRecievedPosts,
           _.isEqual,
         );
-
         watchedState.posts = [
           ...watchedState.posts,
           ...newPosts,
         ];
       })
-      .then((watchedState.disableSubmit = false));
+      .catch((error) => console.log(error))
+      .finally(() => setTimeout(() => update(watchedState), 5000));
   });
 };
 
@@ -90,7 +87,7 @@ const handleNewUrl = (url, addedUrls, watchedState) => {
     })
     .catch((err) => { watchedState.errorMessage = err; })
     .then((watchedState.disableSubmit = false))
-    .then(() => setInterval(() => update(watchedState), 5000));
+    .then(() => setTimeout(() => update(watchedState), 5000));
 };
 
 const app = () => {

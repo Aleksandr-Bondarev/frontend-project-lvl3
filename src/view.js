@@ -2,7 +2,6 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 /* eslint func-names: [0] */
 
-import 'bootstrap';
 import * as _ from 'lodash';
 import onChange from 'on-change';
 
@@ -56,10 +55,6 @@ const addContentAndShowModal = ({ url, description, title }) => {
     '.btn.btn-primary.full-article',
   );
   modalFooterLink.href = url;
-
-  // eslint-disable-next-line
-  const modal = new bootstrap.Modal(document.querySelector('#modal'));
-  modal.show();
 };
 
 const createUl = () => {
@@ -203,7 +198,7 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
     case 'feeds':
       if (previousValue.length !== 0) {
         const newFeeds = _.differenceWith(value, previousValue, _.isEqual);
-        renderPosts(newFeeds);
+        renderFeeds(newFeeds);
         break;
       }
       renderFeeds(value);
@@ -217,14 +212,12 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
       break;
     case 'errorMessage':
       if (value === '') break;
-      console.log('error', value);
       handleError(input, feedback, value, i18nextInstance);
       break;
     case 'linkToChangeStatus':
       linkStatusChanger(value);
       break;
     case 'modalContent':
-      console.log(value);
       addContentAndShowModal(value);
       break;
     default:
@@ -232,10 +225,4 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
   }
 });
 
-export {
-  initWatchedObject,
-  handleError,
-  handleSuccessAdding,
-  linkStatusChanger,
-  addContentAndShowModal,
-};
+export default initWatchedObject;
