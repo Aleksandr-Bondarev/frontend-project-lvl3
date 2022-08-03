@@ -12,8 +12,9 @@ const feedback = document.querySelector(
 );
 const submitButton = document.querySelector('button[type="submit"]');
 
-const disableSubmit = (node, boolean) => {
-  node.disabled = boolean;
+const disableForm = (button, inputNode, boolean) => {
+  button.disabled = boolean;
+  inputNode.disabled = boolean;
 };
 
 const handleSuccessAdding = (
@@ -44,7 +45,12 @@ const linkStatusChanger = (linkId) => {
   targetLink.classList.add('fw-normal');
 };
 
-const addContentAndShowModal = ({ url, description, title }) => {
+const addContentAndShowModal = (id) => {
+  const targetLink = document.querySelector(`a[data-id="${id}"]`);
+  const url = targetLink.href;
+  const description = targetLink.attributes[3].value;
+  const title = targetLink.textContent;
+
   const modalTitle = document.querySelector('.modal-title');
   modalTitle.textContent = title;
 
@@ -203,21 +209,20 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
       }
       renderFeeds(value);
       break;
-    case 'disableSubmit':
-      disableSubmit(submitButton, value);
+    case 'form.status':
+      if (value === 'sending') disableForm(submitButton, input, true);
+      if (value === 'filling') disableForm(submitButton, input, false);
       break;
-    case 'statusSuccess':
+    case 'form.feedback.success':
       if (value !== true) break;
       handleSuccessAdding(input, form, feedback, i18nextInstance);
       break;
-    case 'errorMessage':
+    case 'form.feedback.error':
       if (value === '') break;
       handleError(input, feedback, value, i18nextInstance);
       break;
-    case 'linkToChangeStatus':
+    case 'clickedButtonId':
       linkStatusChanger(value);
-      break;
-    case 'modalContent':
       addContentAndShowModal(value);
       break;
     default:

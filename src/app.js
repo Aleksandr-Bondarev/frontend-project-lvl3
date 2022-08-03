@@ -15,23 +15,15 @@ const form = document.querySelector('.rss-form.text-body');
 const input = document.getElementById('url-input');
 const postsContainer = document.querySelector('.container-xxl');
 
-const i18nextInstance = i18next.createInstance();
-i18nextInstance.init({
-  lng: 'ru',
-  debug: true,
-  resources: {
-    ru,
-  },
-});
-
 const update = (watchedState) => {
-  const { resources } = watchedState;
-  const posts = JSON.parse(JSON.stringify(watchedState.posts));
+  const { posts } = watchedState;
+  const resources = watchedState.feeds.map((el) => el.link);
 
   resources.forEach((url) => {
     const proxified = proxifyUrl(url);
     getData(proxified)
-      .then((data) => {
+      .then((response) => {
+        const data = response.data.contents;
         const postsIndex = resources.indexOf(url);
         const currentUrlPreviouslyRecievedPosts = posts[postsIndex];
         const parsedData = parseRSS(data);
@@ -51,28 +43,29 @@ const update = (watchedState) => {
   });
 };
 
-const handleNewUrl = (url, addedUrls, watchedState) => {
+const handleNewUrl = (url, watchedState) => {
   if (url === null) return;
-
-  watchedState.disableSubmit = true;
+  const addedUrls = watchedState.feeds.map((el) => el.link);
 
   const validUrl = validator(url, addedUrls);
 
   if (typeof validUrl === 'object') {
-    watchedState.statusSuccess = false;
-    watchedState.errorMessage = validUrl;
-    watchedState.disableSubmit = false;
+    watchedState.form.feedback.success = false;
+    watchedState.form.feedback.error = validUrl;
     return;
   }
 
   const proxified = proxifyUrl(validUrl);
+
   getData(proxified)
-    .then((data) => {
+    .then((response) => {
+      const data = response.data.contents;
       const parsedData = parseRSS(data);
       const { title, description } = parsedData;
       watchedState.feeds = [
         ...watchedState.feeds,
         {
+          link: url,
           title,
           description,
         },
@@ -81,51 +74,58 @@ const handleNewUrl = (url, addedUrls, watchedState) => {
         ...watchedState.posts,
         ...parsedData.posts,
       ];
-      watchedState.resources.push(url);
-      watchedState.errorMessage = '';
-      watchedState.statusSuccess = true;
+      watchedState.form.feedback.error = '';
+      watchedState.form.feedback.success = true;
+      watchedState.form.feedback.success = '';
     })
-    .catch((err) => { watchedState.errorMessage = err; })
-    .then((watchedState.disableSubmit = false))
-    .then(() => setTimeout(() => update(watchedState), 5000));
+    .catch((err) => {
+      if (err.message === 'Network Error') {
+        watchedState.form.feedback.error = new Error('networkErr');
+      } else { watchedState.form.feedback.error = err; }
+    })
+    .finally(() => {
+      setTimeout(() => update(watchedState), 5000);
+      watchedState.form.status = 'filling';
+    });
+  watchedState.form.status = 'sending';
 };
 
 const app = () => {
   const state = {
     posts: [],
     feeds: [],
-    resources: [],
-    disableSubmit: '',
-    statusSuccess: '',
-    errorMessage: '',
-    linkToChangeStatus: '',
-    modalContent: '',
+    form: {
+      status: '',
+      feedback: {
+        success: '',
+        error: '',
+      },
+    },
+    clickedButtonId: '',
   };
+
+  const i18nextInstance = i18next.createInstance();
+  i18nextInstance.init({
+    lng: 'ru',
+    debug: true,
+    resources: {
+      ru,
+    },
+  });
 
   const watchedState = initWatchedObject(state, i18nextInstance);
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const resources = Array.from(watchedState.resources);
     const url = input.value;
-    handleNewUrl(url, resources, watchedState);
+    handleNewUrl(url, watchedState);
   });
 
   postsContainer.addEventListener('click', (event) => {
     if (event.target.type !== 'button') return;
 
     const targetButtonId = event.target.attributes[2].value;
-    const targetLink = document.querySelector(`a[data-id="${targetButtonId}"]`);
-    const url = targetLink.href;
-    const description = targetLink.attributes[3].value;
-    const title = targetLink.textContent;
-
-    watchedState.linkToChangeStatus = targetButtonId;
-    watchedState.modalContent = {
-      url,
-      description,
-      title,
-    };
+    watchedState.clickedButtonId = targetButtonId;
   });
 };
 

@@ -15,9 +15,10 @@ const postsParser = (posts) => {
 const parseRSS = (xml) => {
   const parser = new DOMParser();
   const parsedResponse = parser.parseFromString(xml, 'text/xml');
-  if (parsedResponse.querySelector('rss') === null) {
-    throw new Error('invalidRSS');
-  }
+  const errorNode = parsedResponse.querySelector('parsererror');
+
+  if (errorNode) throw new Error('invalidRSS');
+
   const channel = parsedResponse.querySelector('channel');
 
   const mainTitle = channel.querySelector('title');
