@@ -24,19 +24,25 @@ const update = (watchedState) => {
     getData(proxified)
       .then((response) => {
         const data = response.data.contents;
-        const postsIndex = resources.indexOf(url);
-        const currentUrlPreviouslyRecievedPosts = posts[postsIndex];
+        const linkId = watchedState.feeds.find((el) => el.link === url).id;
+        const currentUrlPreviouslyRecievedPosts = posts.filter((post) => post.linkId === linkId);
         const parsedData = parseRSS(data);
         const { posts: gettedPosts } = parsedData;
-        const newPosts = _.differenceWith(
+        gettedPosts.forEach((post) => {
+          post.linkId = linkId;
+          post.id = _.uniqueId();
+          return post;
+        });
+        const newPosts = _.differenceBy(
           gettedPosts,
           currentUrlPreviouslyRecievedPosts,
-          _.isEqual,
+          'title',
         );
         watchedState.posts = [
           ...watchedState.posts,
           ...newPosts,
         ];
+        console.log(watchedState);
       })
       .catch((error) => console.log(error))
       .finally(() => setTimeout(() => update(watchedState), 5000));
@@ -44,14 +50,16 @@ const update = (watchedState) => {
 };
 
 const handleNewUrl = (url, watchedState) => {
+  watchedState.network = '';
+
   if (url === null) return;
   const addedUrls = watchedState.feeds.map((el) => el.link);
 
   const validUrl = validator(url, addedUrls);
 
   if (typeof validUrl === 'object') {
-    watchedState.form.feedback.success = false;
-    watchedState.form.feedback.error = validUrl;
+    watchedState.form.success = false;
+    watchedState.form.error = validUrl.message;
     return;
   }
 
@@ -59,12 +67,21 @@ const handleNewUrl = (url, watchedState) => {
 
   getData(proxified)
     .then((response) => {
+      const linkId = watchedState.feeds.length !== 0
+        ? watchedState.feeds[watchedState.feeds.length - 1].id + 1
+        : 1;
       const data = response.data.contents;
       const parsedData = parseRSS(data);
       const { title, description } = parsedData;
+      const postsWithId = parsedData.posts.map((post) => {
+        post.linkId = linkId;
+        post.id = _.uniqueId();
+        return post;
+      });
       watchedState.feeds = [
         ...watchedState.feeds,
         {
+          id: linkId,
           link: url,
           title,
           description,
@@ -72,20 +89,21 @@ const handleNewUrl = (url, watchedState) => {
       ];
       watchedState.posts = [
         ...watchedState.posts,
-        ...parsedData.posts,
+        ...postsWithId,
       ];
-      watchedState.form.feedback.error = '';
-      watchedState.form.feedback.success = true;
-      watchedState.form.feedback.success = '';
+      watchedState.form.error = '';
+      watchedState.form.success = true;
+      watchedState.form.success = '';
     })
     .catch((err) => {
       if (err.message === 'Network Error') {
-        watchedState.form.feedback.error = new Error('networkErr');
-      } else { watchedState.form.feedback.error = err; }
+        watchedState.network = 'networkErr';
+      } else { watchedState.form.error = err.message; }
     })
     .finally(() => {
       setTimeout(() => update(watchedState), 5000);
       watchedState.form.status = 'filling';
+      console.log(watchedState);
     });
   watchedState.form.status = 'sending';
 };
@@ -93,15 +111,15 @@ const handleNewUrl = (url, watchedState) => {
 const app = () => {
   const state = {
     posts: [],
+    readPostsIds: [],
     feeds: [],
     form: {
       status: '',
-      feedback: {
-        success: '',
-        error: '',
-      },
+      success: '',
+      error: '',
     },
-    clickedButtonId: '',
+    targetPostId: '',
+    network: '',
   };
 
   const i18nextInstance = i18next.createInstance();
@@ -123,9 +141,12 @@ const app = () => {
 
   postsContainer.addEventListener('click', (event) => {
     if (event.target.type !== 'button') return;
+    console.log('eveeeeeeeeent', event);
 
-    const targetButtonId = event.target.attributes[2].value;
-    watchedState.clickedButtonId = targetButtonId;
+    const targetPostId = event.target.attributes[2].value;
+
+    watchedState.targetPostId = targetPostId;
+    watchedState.readPostsIds.push(targetPostId);
   });
 };
 

@@ -31,12 +31,12 @@ const handleSuccessAdding = (
   feedbackNode.innerText = i18nextInstance.t('success');
 };
 
-const handleError = (inputNode, feedbackNode, error, i18nextInstance) => {
+const handleError = (inputNode, feedbackNode, errorMessage, i18nextInstance) => {
   inputNode.classList.add('is-invalid');
   inputNode.classList.add('is-invalid');
   feedbackNode.classList.remove('text-success');
   feedbackNode.classList.add('text-danger');
-  feedbackNode.innerText = i18nextInstance.t(error.message);
+  feedbackNode.innerText = i18nextInstance.t(errorMessage);
 };
 
 const linkStatusChanger = (linkId) => {
@@ -74,8 +74,9 @@ const renderList = (posts, isUlExisted) => {
     ? document.querySelector('.rounded-0.list-group.border-0')
     : createUl();
   posts.forEach((post) => {
-    const id = Math.floor(Math.random() * 100000);
-    const { title, link, description } = post;
+    const {
+      title, link, description, id,
+    } = post;
 
     const li = document.createElement('li');
     li.classList.add(
@@ -213,17 +214,23 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
       if (value === 'sending') disableForm(submitButton, input, true);
       if (value === 'filling') disableForm(submitButton, input, false);
       break;
-    case 'form.feedback.success':
+    case 'form.success':
       if (value !== true) break;
       handleSuccessAdding(input, form, feedback, i18nextInstance);
       break;
-    case 'form.feedback.error':
+    case 'form.error':
       if (value === '') break;
       handleError(input, feedback, value, i18nextInstance);
       break;
-    case 'clickedButtonId':
-      linkStatusChanger(value);
+    case 'network':
+      if (value === '') break;
+      handleError(input, feedback, value, i18nextInstance);
+      break;
+    case 'targetPostId':
       addContentAndShowModal(value);
+      break;
+    case 'readPostsIds':
+      linkStatusChanger(value[value.length - 1]);
       break;
     default:
       break;
