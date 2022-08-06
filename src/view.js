@@ -22,7 +22,9 @@ const handleSuccessAdding = (
   formNode,
   feedbackNode,
   i18nextInstance,
+  status,
 ) => {
+  if (!status) return;
   inputNode.classList.remove('is-invalid');
   formNode.reset();
   inputNode.focus();
@@ -32,6 +34,7 @@ const handleSuccessAdding = (
 };
 
 const handleError = (inputNode, feedbackNode, errorMessage, i18nextInstance) => {
+  if (errorMessage === '') return;
   inputNode.classList.add('is-invalid');
   inputNode.classList.add('is-invalid');
   feedbackNode.classList.remove('text-success');
@@ -115,40 +118,7 @@ const renderList = (posts, isUlExisted) => {
   return ul;
 };
 
-const renderPosts = (posts, postsToRender = '') => {
-  if (typeof postsToRender === 'object' && postsToRender.length === 0) {
-    return;
-  }
-  const postsContainer = document.querySelector('.posts');
-
-  if (postsContainer.childNodes.length === 0) {
-    const createdMainContainer = document.createElement('div');
-    createdMainContainer.classList.add('card', 'border-0');
-
-    const mainTitleContainer = document.createElement('div');
-    mainTitleContainer.classList.add('card-body');
-
-    const createdMainTitle = document.createElement('h2');
-    createdMainTitle.classList.add('card-title', 'h4');
-    createdMainTitle.textContent = 'Посты';
-
-    mainTitleContainer.append(createdMainTitle);
-    createdMainContainer.append(mainTitleContainer);
-    postsContainer.append(createdMainContainer);
-  }
-
-  const existingMainContainer = postsContainer.childNodes[0];
-
-  const isUlExisted = existingMainContainer.childNodes[1] !== undefined;
-
-  const renderedList = postsToRender.length > 0
-    ? renderList(postsToRender, isUlExisted)
-    : renderList(posts, isUlExisted);
-
-  existingMainContainer.append(renderedList);
-};
-
-const containerCreator = (feeds) => {
+const containerCreator = (container, containerName) => {
   const createdMainContainer = document.createElement('div');
   createdMainContainer.classList.add('card', 'border-0');
 
@@ -156,19 +126,42 @@ const containerCreator = (feeds) => {
   titleContainer.classList.add('card-body');
 
   const mainHeader = document.createElement('h2');
-  mainHeader.textContent = 'Фиды';
+  mainHeader.textContent = containerName;
   mainHeader.classList.add('card-title', 'h4');
 
   titleContainer.append(mainHeader);
   createdMainContainer.append(titleContainer);
-  feeds.append(createdMainContainer);
+  container.append(createdMainContainer);
 };
 
-const renderFeeds = ([{ title, description }]) => {
+const renderPosts = (actualPosts, previousPosts) => {
+  const newPosts = previousPosts.length !== 0
+    ? _.differenceWith(actualPosts, previousPosts, _.isEqual)
+    : actualPosts;
+
+  const postsContainer = document.querySelector('.posts');
+  if (previousPosts.length === 0) {
+    containerCreator(postsContainer, 'Посты');
+  }
+
+  const existingMainContainer = postsContainer.childNodes[0];
+  const isUlExisted = existingMainContainer.childNodes[1] !== undefined;
+
+  const renderedList = renderList(newPosts, isUlExisted);
+  existingMainContainer.append(renderedList);
+};
+
+const renderFeeds = (actualFeeds, previousFeeds) => {
+  const newFeeds = previousFeeds.length !== 0
+    ? _.differenceWith(actualFeeds, previousFeeds, _.isEqual)
+    : actualFeeds;
+
+  const [{ title, description }] = newFeeds;
+
   const feedsContainer = document.querySelector('.feeds');
 
   if (feedsContainer.childNodes.length === 0) {
-    containerCreator(feedsContainer);
+    containerCreator(feedsContainer, 'Фиды');
   }
   const existingMainContainer = feedsContainer.childNodes[0];
   const ul = document.createElement('ul');
@@ -195,35 +188,21 @@ const renderFeeds = ([{ title, description }]) => {
 const initWatchedObject = (state, i18nextInstance) => onChange(state, function (path, value, previousValue) {
   switch (path) {
     case 'posts':
-      if (previousValue.length !== 0) {
-        const newPosts = _.differenceWith(value, previousValue, _.isEqual);
-        renderPosts(newPosts);
-        break;
-      }
-      renderPosts(value);
+      renderPosts(value, previousValue);
       break;
     case 'feeds':
-      if (previousValue.length !== 0) {
-        const newFeeds = _.differenceWith(value, previousValue, _.isEqual);
-        renderFeeds(newFeeds);
-        break;
-      }
-      renderFeeds(value);
+      renderFeeds(value, previousValue);
       break;
     case 'form.status':
-      if (value === 'sending') disableForm(submitButton, input, true);
-      if (value === 'filling') disableForm(submitButton, input, false);
+      disableForm(submitButton, input, value === 'sending');
       break;
     case 'form.success':
-      if (value !== true) break;
-      handleSuccessAdding(input, form, feedback, i18nextInstance);
+      handleSuccessAdding(input, form, feedback, i18nextInstance, !!value);
       break;
     case 'form.error':
-      if (value === '') break;
       handleError(input, feedback, value, i18nextInstance);
       break;
     case 'network':
-      if (value === '') break;
       handleError(input, feedback, value, i18nextInstance);
       break;
     case 'targetPostId':
