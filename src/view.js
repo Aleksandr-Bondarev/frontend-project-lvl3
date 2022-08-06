@@ -77,7 +77,7 @@ const createUl = () => {
   return ul;
 };
 
-const renderList = (posts, isUlExisted) => {
+const makeList = (posts, isUlExisted) => {
   const ul = isUlExisted
     ? document.querySelector('.rounded-0.list-group.border-0')
     : createUl();
@@ -155,7 +155,8 @@ const renderPosts = (actualPosts, previousPosts) => {
   const existingMainContainer = postsContainer.childNodes[0];
   const isUlExisted = existingMainContainer.childNodes[1] !== undefined;
 
-  const list = renderList(newPosts, isUlExisted);
+  const list = makeList(newPosts, isUlExisted);
+  console.log('list', list);
   existingMainContainer.append(list);
 };
 
