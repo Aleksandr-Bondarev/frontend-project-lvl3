@@ -60,7 +60,7 @@ const linkStatusChanger = (linkId) => {
 const addContentAndShowModal = (id) => {
   const targetLink = document.querySelector(`a[data-id="${id}"]`);
   const url = targetLink.href;
-  const description = targetLink.attributes[3].value;
+  const description = targetLink.dataset.description;
   const title = targetLink.textContent;
 
   const modalTitle = document.querySelector('.modal-title');
@@ -101,20 +101,23 @@ const renderList = (posts, isUlExisted) => {
     );
 
     const a = document.createElement('a');
+    a.dataset.description = description;
+    a.dataset.id = id;
+
     a.setAttribute('href', link);
-    a.classList.add('fw-bold');
-    a.setAttribute('data-id', id);
-    a.setAttribute('data-description', description);
     a.setAttribute('target', '_blank');
     a.setAttribute('rel', 'noopener noreferrer');
+
+    a.classList.add('fw-bold');
     a.textContent = title;
 
     const button = document.createElement('button');
+    button.dataset.id = id;
+    button.dataset.bsToggle = 'modal';
+    button.dataset.bsTarget = '#modal';
+
     button.setAttribute('type', 'button');
     button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-    button.setAttribute('data-id', id);
-    button.setAttribute('data-bs-toggle', 'modal');
-    button.setAttribute('data-bs-target', '#modal');
     button.textContent = 'Просмотр';
 
     li.append(a, button);

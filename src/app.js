@@ -52,7 +52,7 @@ const handleNewUrl = (url, watchedState) => {
 
   const validUrl = validator(url, addedUrls);
 
-  if (validUrl.message === 'invalidURL') {
+  if (validUrl.message) {
     watchedState.form.success = false;
     watchedState.form.error = validUrl.message;
     return;
@@ -103,7 +103,7 @@ const handleNewUrl = (url, watchedState) => {
   watchedState.form.status = 'sending';
 };
 
-const app = ({ form, input, postsContainer }) => {
+const app = ({ form, postsContainer }) => {
   const state = {
     posts: [],
     readPostsIds: [],
@@ -130,14 +130,15 @@ const app = ({ form, input, postsContainer }) => {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const url = input.value;
+    const formData = new FormData(form);
+    const url = formData.get('url');
     handleNewUrl(url, watchedState);
   });
 
   postsContainer.addEventListener('click', (event) => {
     if (event.target.type !== 'button') return;
 
-    const targetPostId = event.target.attributes[2].value;
+    const targetPostId = event.target.dataset.id;
 
     watchedState.targetPostId = targetPostId;
     watchedState.readPostsIds.push(targetPostId);
