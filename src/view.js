@@ -1,15 +1,11 @@
-/* eslint prefer-arrow-callback: [0] */
-/* eslint no-param-reassign: ["error", { "props": false }] */
-/* eslint func-names: [0] */
+/* eslint no-param-reassign: [
+    "error",
+    { "props": true, "ignorePropertyModificationsFor": ["input", "submitButton", "feedback"] }
+  ]
+*/
 
 import * as _ from 'lodash';
 import onChange from 'on-change';
-
-// const form = document.querySelector('.rss-form.text-body');
-// const input = document.getElementById('url-input');
-// const feedback = document.querySelector(
-//   '.feedback.m-0.position-absolute.small',
-// );
 
 const elements = {
   form: document.querySelector('.rss-form.text-body'),
@@ -60,7 +56,7 @@ const linkStatusChanger = (linkId) => {
 const addContentAndShowModal = (id) => {
   const targetLink = document.querySelector(`a[data-id="${id}"]`);
   const url = targetLink.href;
-  const description = targetLink.dataset.description;
+  const { description } = targetLink.dataset;
   const title = targetLink.textContent;
 
   const modalTitle = document.querySelector('.modal-title');

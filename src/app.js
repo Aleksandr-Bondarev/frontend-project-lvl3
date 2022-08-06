@@ -1,4 +1,8 @@
-/* eslint no-param-reassign: ["error", { "props": false }] */
+/* eslint no-param-reassign: [
+    "error",
+    { "props": true, "ignorePropertyModificationsFor": ["watchedState", "post"] }
+  ]
+*/
 
 import 'bootstrap';
 import i18next from 'i18next';
