@@ -1,19 +1,14 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
-/* eslint no-restricted-syntax: [0] */
 
 import 'bootstrap';
 import i18next from 'i18next';
 import * as _ from 'lodash';
+import axios from 'axios';
 import ru from './locales/ru-RU.js';
 import proxifyUrl from './utils/proxifyUrl.js';
-import getData from './utils/getData.js';
 import parseRSS from './utils/parseRSS.js';
 import validator from './utils/validator.js';
 import initWatchedObject from './view.js';
-
-const form = document.querySelector('.rss-form.text-body');
-const input = document.getElementById('url-input');
-const postsContainer = document.querySelector('.container-xxl');
 
 const update = (watchedState) => {
   const { posts } = watchedState;
@@ -21,7 +16,7 @@ const update = (watchedState) => {
 
   resources.forEach((url) => {
     const proxified = proxifyUrl(url);
-    getData(proxified)
+    axios.get(proxified)
       .then((response) => {
         const data = response.data.contents;
         const linkId = watchedState.feeds.find((el) => el.link === url).id;
@@ -44,7 +39,7 @@ const update = (watchedState) => {
         ];
         console.log(watchedState);
       })
-      .catch((error) => console.log(error))
+      .catch(() => { watchedState.network = 'networkErr'; })
       .finally(() => setTimeout(() => update(watchedState), 5000));
   });
 };
@@ -57,7 +52,7 @@ const handleNewUrl = (url, watchedState) => {
 
   const validUrl = validator(url, addedUrls);
 
-  if (typeof validUrl === 'object') {
+  if (validUrl.message === 'invalidURL') {
     watchedState.form.success = false;
     watchedState.form.error = validUrl.message;
     return;
@@ -65,7 +60,7 @@ const handleNewUrl = (url, watchedState) => {
 
   const proxified = proxifyUrl(validUrl);
 
-  getData(proxified)
+  axios.get(proxified)
     .then((response) => {
       const linkId = watchedState.feeds.length !== 0
         ? watchedState.feeds[watchedState.feeds.length - 1].id + 1
@@ -108,7 +103,7 @@ const handleNewUrl = (url, watchedState) => {
   watchedState.form.status = 'sending';
 };
 
-const app = () => {
+const app = ({ form, input, postsContainer }) => {
   const state = {
     posts: [],
     readPostsIds: [],
@@ -141,7 +136,6 @@ const app = () => {
 
   postsContainer.addEventListener('click', (event) => {
     if (event.target.type !== 'button') return;
-    console.log('eveeeeeeeeent', event);
 
     const targetPostId = event.target.attributes[2].value;
 

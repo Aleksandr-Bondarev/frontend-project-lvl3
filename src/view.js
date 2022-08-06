@@ -5,41 +5,50 @@
 import * as _ from 'lodash';
 import onChange from 'on-change';
 
-const form = document.querySelector('.rss-form.text-body');
-const input = document.getElementById('url-input');
-const feedback = document.querySelector(
-  '.feedback.m-0.position-absolute.small',
-);
-const submitButton = document.querySelector('button[type="submit"]');
+// const form = document.querySelector('.rss-form.text-body');
+// const input = document.getElementById('url-input');
+// const feedback = document.querySelector(
+//   '.feedback.m-0.position-absolute.small',
+// );
 
-const disableForm = (button, inputNode, boolean) => {
-  button.disabled = boolean;
-  inputNode.disabled = boolean;
+const elements = {
+  form: document.querySelector('.rss-form.text-body'),
+  input: document.getElementById('url-input'),
+  feedback: document.querySelector('.feedback.m-0.position-absolute.small'),
+  postsContainer: document.querySelector('.container-xxl'),
+  submitButton: document.querySelector('button[type="submit"]'),
+};
+
+const disableForm = ({ input, submitButton }, boolean) => {
+  submitButton.disabled = boolean;
+  input.disabled = boolean;
 };
 
 const handleSuccessAdding = (
-  inputNode,
-  formNode,
-  feedbackNode,
+  { form, input, feedback },
   i18nextInstance,
   status,
 ) => {
   if (!status) return;
-  inputNode.classList.remove('is-invalid');
-  formNode.reset();
-  inputNode.focus();
-  feedbackNode.classList.remove('text-danger');
-  feedbackNode.classList.add('text-success');
-  feedbackNode.innerText = i18nextInstance.t('success');
+  input.classList.remove('is-invalid');
+  form.reset();
+  input.focus();
+  feedback.classList.remove('text-danger');
+  feedback.classList.add('text-success');
+  feedback.innerText = i18nextInstance.t('success');
 };
 
-const handleError = (inputNode, feedbackNode, errorMessage, i18nextInstance) => {
+const handleError = (
+  { input, feedback },
+  errorMessage,
+  i18nextInstance,
+) => {
   if (errorMessage === '') return;
-  inputNode.classList.add('is-invalid');
-  inputNode.classList.add('is-invalid');
-  feedbackNode.classList.remove('text-success');
-  feedbackNode.classList.add('text-danger');
-  feedbackNode.innerText = i18nextInstance.t(errorMessage);
+  input.classList.add('is-invalid');
+  input.classList.add('is-invalid');
+  feedback.classList.remove('text-success');
+  feedback.classList.add('text-danger');
+  feedback.innerText = i18nextInstance.t(errorMessage);
 };
 
 const linkStatusChanger = (linkId) => {
@@ -147,8 +156,8 @@ const renderPosts = (actualPosts, previousPosts) => {
   const existingMainContainer = postsContainer.childNodes[0];
   const isUlExisted = existingMainContainer.childNodes[1] !== undefined;
 
-  const renderedList = renderList(newPosts, isUlExisted);
-  existingMainContainer.append(renderedList);
+  const list = renderList(newPosts, isUlExisted);
+  existingMainContainer.append(list);
 };
 
 const renderFeeds = (actualFeeds, previousFeeds) => {
@@ -194,16 +203,16 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
       renderFeeds(value, previousValue);
       break;
     case 'form.status':
-      disableForm(submitButton, input, value === 'sending');
+      disableForm(elements, value === 'sending');
       break;
     case 'form.success':
-      handleSuccessAdding(input, form, feedback, i18nextInstance, !!value);
+      handleSuccessAdding(elements, i18nextInstance, !!value);
       break;
     case 'form.error':
-      handleError(input, feedback, value, i18nextInstance);
+      handleError(elements, value, i18nextInstance);
       break;
     case 'network':
-      handleError(input, feedback, value, i18nextInstance);
+      handleError(elements, value, i18nextInstance);
       break;
     case 'targetPostId':
       addContentAndShowModal(value);
@@ -215,5 +224,7 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
       break;
   }
 });
+
+export { elements };
 
 export default initWatchedObject;
