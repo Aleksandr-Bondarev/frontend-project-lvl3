@@ -88,7 +88,7 @@ const handleNewUrl = (url, watchedState) => {
     })
     .catch((err) => {
       if (err.message === 'Network Error') watchedState.network.error = 'networkErr';
-      if (err.message === 'invalidRSS') watchedState.form.error = 'invalidRSS';
+      else if (err.message === 'invalidRSS') watchedState.form.error = 'invalidRSS';
       else watchedState.form.error = 'unknownError';
     })
     .finally(() => {
