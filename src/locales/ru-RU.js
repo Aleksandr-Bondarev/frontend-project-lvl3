@@ -5,5 +5,6 @@ export default {
     invalidURL: 'Ссылка должна быть валидным URL',
     networkErr: 'Ошибка сети',
     invalidRSS: 'Ресурс не содержит валидный RSS',
+    unknownError: 'Неизвестная ошибка',
   },
 };

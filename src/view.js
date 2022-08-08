@@ -25,7 +25,7 @@ const handleError = (
   errorMessage,
   i18nextInstance,
 ) => {
-  if (errorMessage === '') return;
+  if (!errorMessage) return;
   input.classList.add('is-invalid');
   input.classList.add('is-invalid');
   feedback.classList.remove('text-success');

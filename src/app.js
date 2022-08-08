@@ -8,14 +8,6 @@ import parseRSS from './utils/parseRSS.js';
 import validator from './utils/validator.js';
 import initWatchedObject from './view.js';
 
-const elements = {
-  form: document.querySelector('.rss-form.text-body'),
-  input: document.getElementById('url-input'),
-  feedback: document.querySelector('.feedback.m-0.position-absolute.small'),
-  postsContainer: document.querySelector('.container-xxl'),
-  submitButton: document.querySelector('button[type="submit"]'),
-};
-
 const update = (watchedState) => {
   const { posts } = watchedState;
   const resources = watchedState.feeds.map((el) => el.link);
@@ -51,13 +43,13 @@ const update = (watchedState) => {
 };
 
 const handleNewUrl = (url, watchedState) => {
-  watchedState.network.error = '';
+  watchedState.network.error = null;
 
   const addedUrls = watchedState.feeds.map((el) => el.link);
   const validUrl = validator(url, addedUrls);
 
   if (validUrl.message) {
-    watchedState.form.status = '';
+    watchedState.form.status = null;
     watchedState.form.error = validUrl.message;
     return;
   }
@@ -90,23 +82,32 @@ const handleNewUrl = (url, watchedState) => {
         ...watchedState.posts,
         ...postsWithId,
       ];
-      watchedState.form.error = '';
+      watchedState.form.error = null;
       watchedState.form.status = 'success';
-      watchedState.form.status = '';
+      watchedState.form.status = null;
     })
     .catch((err) => {
-      if (err.message === 'Network Error') {
-        watchedState.network.error = 'networkErr';
-      } else { watchedState.form.error = err.message; }
+      if (err.message === 'Network Error') watchedState.network.error = 'networkErr';
+      if (err.message === 'invalidRSS') watchedState.form.error = 'invalidRSS';
+      else watchedState.form.error = 'unknownError';
     })
     .finally(() => {
       setTimeout(() => update(watchedState), 5000);
-      watchedState.network.status = '';
+      watchedState.network.status = 'idle';
     });
 };
 
 const app = () => {
+  const elements = {
+    form: document.querySelector('.rss-form.text-body'),
+    input: document.getElementById('url-input'),
+    feedback: document.querySelector('.feedback.m-0.position-absolute.small'),
+    postsContainer: document.querySelector('.container-xxl'),
+    submitButton: document.querySelector('button[type="submit"]'),
+  };
+
   const { form, postsContainer } = elements;
+
   const state = {
     posts: [],
     readPostsIds: [],
