@@ -1,19 +1,5 @@
-/* eslint no-param-reassign: [
-    "error",
-    { "props": true, "ignorePropertyModificationsFor": ["input", "submitButton", "feedback"] }
-  ]
-*/
-
 import * as _ from 'lodash';
 import onChange from 'on-change';
-
-const elements = {
-  form: document.querySelector('.rss-form.text-body'),
-  input: document.getElementById('url-input'),
-  feedback: document.querySelector('.feedback.m-0.position-absolute.small'),
-  postsContainer: document.querySelector('.container-xxl'),
-  submitButton: document.querySelector('button[type="submit"]'),
-};
 
 const disableForm = ({ input, submitButton }, boolean) => {
   submitButton.disabled = boolean;
@@ -194,7 +180,7 @@ const renderFeeds = (actualFeeds, previousFeeds) => {
 };
 
 // eslint-disable-next-line
-const initWatchedObject = (state, i18nextInstance) => onChange(state, function (path, value, previousValue) {
+const initWatchedObject = (state, i18nextInstance, elements) => onChange(state, function (path, value, previousValue) {
   switch (path) {
     case 'posts':
       renderPosts(value, previousValue);
@@ -202,16 +188,16 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
     case 'feeds':
       renderFeeds(value, previousValue);
       break;
-    case 'form.status':
-      disableForm(elements, value === 'sending');
+    case 'network.status':
+      disableForm(elements, value === 'downloading');
       break;
-    case 'form.success':
-      handleSuccessAdding(elements, i18nextInstance, !!value);
+    case 'form.status':
+      handleSuccessAdding(elements, i18nextInstance, value === 'success');
       break;
     case 'form.error':
       handleError(elements, value, i18nextInstance);
       break;
-    case 'network':
+    case 'network.error':
       handleError(elements, value, i18nextInstance);
       break;
     case 'targetPostId':
@@ -224,7 +210,5 @@ const initWatchedObject = (state, i18nextInstance) => onChange(state, function (
       break;
   }
 });
-
-export { elements };
 
 export default initWatchedObject;

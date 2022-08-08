@@ -12,7 +12,7 @@ setLocale({
 });
 
 const validator = (urlToValidate, alreadyExisting) => {
-  const schema = yup.string().url().notOneOf(alreadyExisting);
+  const schema = yup.string().required().url().notOneOf(alreadyExisting);
 
   try {
     return schema.validateSync(urlToValidate);

@@ -1,9 +1,3 @@
-/* eslint no-param-reassign: [
-    "error",
-    { "props": true, "ignorePropertyModificationsFor": ["watchedState", "post"] }
-  ]
-*/
-
 import 'bootstrap';
 import i18next from 'i18next';
 import * as _ from 'lodash';
@@ -13,6 +7,14 @@ import proxifyUrl from './utils/proxifyUrl.js';
 import parseRSS from './utils/parseRSS.js';
 import validator from './utils/validator.js';
 import initWatchedObject from './view.js';
+
+const elements = {
+  form: document.querySelector('.rss-form.text-body'),
+  input: document.getElementById('url-input'),
+  feedback: document.querySelector('.feedback.m-0.position-absolute.small'),
+  postsContainer: document.querySelector('.container-xxl'),
+  submitButton: document.querySelector('button[type="submit"]'),
+};
 
 const update = (watchedState) => {
   const { posts } = watchedState;
@@ -43,27 +45,25 @@ const update = (watchedState) => {
         ];
         console.log(watchedState);
       })
-      .catch(() => { watchedState.network = 'networkErr'; })
+      .catch(() => { watchedState.network.error = 'networkErr'; })
       .finally(() => setTimeout(() => update(watchedState), 5000));
   });
 };
 
 const handleNewUrl = (url, watchedState) => {
-  watchedState.network = '';
+  watchedState.network.error = '';
 
-  if (url === null) return;
   const addedUrls = watchedState.feeds.map((el) => el.link);
-
   const validUrl = validator(url, addedUrls);
 
   if (validUrl.message) {
-    watchedState.form.success = false;
+    watchedState.form.status = '';
     watchedState.form.error = validUrl.message;
     return;
   }
 
   const proxified = proxifyUrl(validUrl);
-
+  watchedState.network.status = 'downloading';
   axios.get(proxified)
     .then((response) => {
       const linkId = watchedState.feeds.length !== 0
@@ -91,34 +91,35 @@ const handleNewUrl = (url, watchedState) => {
         ...postsWithId,
       ];
       watchedState.form.error = '';
-      watchedState.form.success = true;
-      watchedState.form.success = '';
+      watchedState.form.status = 'success';
+      watchedState.form.status = '';
     })
     .catch((err) => {
       if (err.message === 'Network Error') {
-        watchedState.network = 'networkErr';
+        watchedState.network.error = 'networkErr';
       } else { watchedState.form.error = err.message; }
     })
     .finally(() => {
       setTimeout(() => update(watchedState), 5000);
-      watchedState.form.status = 'filling';
-      console.log(watchedState);
+      watchedState.network.status = '';
     });
-  watchedState.form.status = 'sending';
 };
 
-const app = ({ form, postsContainer }) => {
+const app = () => {
+  const { form, postsContainer } = elements;
   const state = {
     posts: [],
     readPostsIds: [],
     feeds: [],
     form: {
       status: '',
-      success: '',
       error: '',
     },
     targetPostId: '',
-    network: '',
+    network: {
+      status: '',
+      error: '',
+    },
   };
 
   const i18nextInstance = i18next.createInstance();
@@ -130,7 +131,7 @@ const app = ({ form, postsContainer }) => {
     },
   });
 
-  const watchedState = initWatchedObject(state, i18nextInstance);
+  const watchedState = initWatchedObject(state, i18nextInstance, elements);
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
