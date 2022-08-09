@@ -55,7 +55,7 @@ const handleNewUrl = (url, watchedState) => {
   }
 
   const proxified = proxifyUrl(validUrl);
-  watchedState.network.status = 'downloading';
+  watchedState.network.status = 'loading';
   axios.get(proxified)
     .then((response) => {
       const linkId = watchedState.feeds.length !== 0
@@ -113,13 +113,13 @@ const app = () => {
     readPostsIds: [],
     feeds: [],
     form: {
-      status: '',
-      error: '',
+      status: null,
+      error: null,
     },
-    targetPostId: '',
+    targetPostId: null,
     network: {
-      status: '',
-      error: '',
+      status: 'idle',
+      error: null,
     },
   };
 

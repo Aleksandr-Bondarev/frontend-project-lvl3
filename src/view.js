@@ -189,7 +189,7 @@ const initWatchedObject = (state, i18nextInstance, elements) => onChange(state, 
       renderFeeds(value, previousValue);
       break;
     case 'network.status':
-      disableForm(elements, value === 'downloading');
+      disableForm(elements, value === 'loading');
       break;
     case 'form.status':
       handleSuccessAdding(elements, i18nextInstance, value === 'success');
