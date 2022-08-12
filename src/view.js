@@ -17,7 +17,7 @@ const handleSuccessAdding = (
   input.focus();
   feedback.classList.remove('text-danger');
   feedback.classList.add('text-success');
-  feedback.innerText = i18nextInstance.t('success');
+  feedback.innerText = i18nextInstance.t('feedback.success');
 };
 
 const handleError = (
@@ -30,7 +30,7 @@ const handleError = (
   input.classList.add('is-invalid');
   feedback.classList.remove('text-success');
   feedback.classList.add('text-danger');
-  feedback.innerText = i18nextInstance.t(errorMessage);
+  feedback.textContent = i18nextInstance.t(`feedback.${errorMessage}`);
 };
 
 const linkStatusChanger = (linkId) => {
@@ -63,7 +63,7 @@ const createUl = () => {
   return ul;
 };
 
-const makeList = (posts, isUlExisted) => {
+const makeList = (posts, isUlExisted, i18nextInstance) => {
   const ul = isUlExisted
     ? document.querySelector('.rounded-0.list-group.border-0')
     : createUl();
@@ -100,7 +100,7 @@ const makeList = (posts, isUlExisted) => {
 
     button.setAttribute('type', 'button');
     button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-    button.textContent = 'Просмотр';
+    button.textContent = i18nextInstance.t('labels.view');
 
     li.append(a, button);
     if (isUlExisted) {
@@ -128,25 +128,24 @@ const containerCreator = (container, containerName) => {
   container.append(createdMainContainer);
 };
 
-const renderPosts = (actualPosts, previousPosts) => {
+const renderPosts = (actualPosts, previousPosts, i18nextInstance) => {
   const newPosts = previousPosts.length !== 0
     ? _.differenceWith(actualPosts, previousPosts, _.isEqual)
     : actualPosts;
 
   const postsContainer = document.querySelector('.posts');
   if (previousPosts.length === 0) {
-    containerCreator(postsContainer, 'Посты');
+    containerCreator(postsContainer, i18nextInstance.t('labels.posts'));
   }
 
   const existingMainContainer = postsContainer.childNodes[0];
   const isUlExisted = existingMainContainer.childNodes[1] !== undefined;
 
-  const list = makeList(newPosts, isUlExisted);
-  console.log('list', list);
+  const list = makeList(newPosts, isUlExisted, i18nextInstance);
   existingMainContainer.append(list);
 };
 
-const renderFeeds = (actualFeeds, previousFeeds) => {
+const renderFeeds = (actualFeeds, previousFeeds, i18nextInstance) => {
   const newFeeds = previousFeeds.length !== 0
     ? _.differenceWith(actualFeeds, previousFeeds, _.isEqual)
     : actualFeeds;
@@ -156,7 +155,7 @@ const renderFeeds = (actualFeeds, previousFeeds) => {
   const feedsContainer = document.querySelector('.feeds');
 
   if (feedsContainer.childNodes.length === 0) {
-    containerCreator(feedsContainer, 'Фиды');
+    containerCreator(feedsContainer, i18nextInstance.t('labels.feeds'));
   }
   const existingMainContainer = feedsContainer.childNodes[0];
   const ul = document.createElement('ul');
@@ -183,12 +182,12 @@ const renderFeeds = (actualFeeds, previousFeeds) => {
 const initWatchedObject = (state, i18nextInstance, elements) => onChange(state, function (path, value, previousValue) {
   switch (path) {
     case 'posts':
-      renderPosts(value, previousValue);
+      renderPosts(value, previousValue, i18nextInstance);
       break;
     case 'feeds':
-      renderFeeds(value, previousValue);
+      renderFeeds(value, previousValue, i18nextInstance);
       break;
-    case 'network.status':
+    case 'loadingRss':
       disableForm(elements, value === 'loading');
       break;
     case 'form.status':
@@ -197,13 +196,10 @@ const initWatchedObject = (state, i18nextInstance, elements) => onChange(state, 
     case 'form.error':
       handleError(elements, value, i18nextInstance);
       break;
-    case 'network.error':
-      handleError(elements, value, i18nextInstance);
-      break;
     case 'targetPostId':
       addContentAndShowModal(value);
       break;
-    case 'readPostsIds':
+    case 'ui.readPostsIds':
       linkStatusChanger(value[value.length - 1]);
       break;
     default:

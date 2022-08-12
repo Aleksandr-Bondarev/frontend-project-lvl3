@@ -8,42 +8,40 @@ import parseRSS from './utils/parseRSS.js';
 import validator from './utils/validator.js';
 import initWatchedObject from './view.js';
 
-const update = (watchedState) => {
+const update = (watchedState, urlToUpdate) => {
   const { posts } = watchedState;
-  const resources = watchedState.feeds.map((el) => el.link);
 
-  resources.forEach((url) => {
-    const proxified = proxifyUrl(url);
-    axios.get(proxified)
-      .then((response) => {
-        const data = response.data.contents;
-        const linkId = watchedState.feeds.find((el) => el.link === url).id;
-        const currentUrlPreviouslyRecievedPosts = posts.filter((post) => post.linkId === linkId);
-        const parsedData = parseRSS(data);
-        const { posts: gettedPosts } = parsedData;
-        gettedPosts.forEach((post) => {
-          post.linkId = linkId;
-          post.id = _.uniqueId();
-          return post;
-        });
-        const newPosts = _.differenceBy(
-          gettedPosts,
-          currentUrlPreviouslyRecievedPosts,
-          'title',
-        );
-        watchedState.posts = [
-          ...watchedState.posts,
-          ...newPosts,
-        ];
-        console.log(watchedState);
-      })
-      .catch(() => { watchedState.network.error = 'networkErr'; })
-      .finally(() => setTimeout(() => update(watchedState), 5000));
-  });
+  const proxified = proxifyUrl(urlToUpdate);
+  axios
+    .get(proxified)
+    .then((response) => {
+      const data = response.data.contents;
+      const linkId = watchedState.feeds.find((el) => el.link === urlToUpdate).id;
+      const currentUrlPreviouslyRecievedPosts = posts.filter(
+        (post) => post.linkId === linkId,
+      );
+      const parsedData = parseRSS(data);
+      const { posts: gettedPosts } = parsedData;
+      gettedPosts.forEach((post) => {
+        post.linkId = linkId;
+        post.id = _.uniqueId();
+        return post;
+      });
+      const newPosts = _.differenceBy(
+        gettedPosts,
+        currentUrlPreviouslyRecievedPosts,
+        'title',
+      );
+      watchedState.posts = [...watchedState.posts, ...newPosts];
+    })
+    .catch(() => {
+      watchedState.form.error = 'networkErr';
+    })
+    .finally(() => setTimeout(() => update(watchedState, urlToUpdate), 5000));
 };
 
 const handleNewUrl = (url, watchedState) => {
-  watchedState.network.error = null;
+  watchedState.form.error = null;
 
   const addedUrls = watchedState.feeds.map((el) => el.link);
   const validUrl = validator(url, addedUrls);
@@ -55,8 +53,9 @@ const handleNewUrl = (url, watchedState) => {
   }
 
   const proxified = proxifyUrl(validUrl);
-  watchedState.network.status = 'loading';
-  axios.get(proxified)
+  watchedState.loadingRss = 'loading';
+  axios
+    .get(proxified)
     .then((response) => {
       const linkId = watchedState.feeds.length !== 0
         ? watchedState.feeds[watchedState.feeds.length - 1].id + 1
@@ -78,22 +77,18 @@ const handleNewUrl = (url, watchedState) => {
           description,
         },
       ];
-      watchedState.posts = [
-        ...watchedState.posts,
-        ...postsWithId,
-      ];
+      watchedState.posts = [...watchedState.posts, ...postsWithId];
       watchedState.form.error = null;
       watchedState.form.status = 'success';
-      watchedState.form.status = null;
     })
     .catch((err) => {
-      if (err.message === 'Network Error') watchedState.network.error = 'networkErr';
+      if (err.message === 'Network Error') watchedState.form.error = 'networkErr';
       else if (err.message === 'invalidRSS') watchedState.form.error = 'invalidRSS';
       else watchedState.form.error = 'unknownError';
     })
     .finally(() => {
-      setTimeout(() => update(watchedState), 5000);
-      watchedState.network.status = 'idle';
+      setTimeout(() => update(watchedState, url), 5000);
+      watchedState.loadingRss = 'idle';
     });
 };
 
@@ -110,16 +105,15 @@ const app = () => {
 
   const state = {
     posts: [],
-    readPostsIds: [],
     feeds: [],
     form: {
       status: null,
       error: null,
     },
     targetPostId: null,
-    network: {
-      status: 'idle',
-      error: null,
+    loadingRss: 'idle',
+    ui: {
+      readPostsIds: [],
     },
   };
 
@@ -147,7 +141,7 @@ const app = () => {
     const targetPostId = event.target.dataset.id;
 
     watchedState.targetPostId = targetPostId;
-    watchedState.readPostsIds.push(targetPostId);
+    watchedState.ui.readPostsIds.push(targetPostId);
   });
 };
 
